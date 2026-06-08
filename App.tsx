@@ -20,6 +20,7 @@ import { AuthPage } from './components/AuthPage';
 import { ReportExport } from './components/ReportExport';
 import { TaskList } from './components/TaskList';
 import { WorkshopPage } from './components/WorkshopPage';
+import { SettingsPage } from './components/SettingsPage';
 import { supabase } from './lib/supabase';
 import { schedulePlannerReminder, scheduleQuestReminder } from './lib/notifications';
 
@@ -27,6 +28,7 @@ import { schedulePlannerReminder, scheduleQuestReminder } from './lib/notificati
 const BANNER_AD_ID = 'ca-app-pub-2481483129842770/1727552190';
 const INTERSTITIAL_AD_ID = 'ca-app-pub-2481483129842770/9928108860';
 const REWARDED_AD_ID = 'ca-app-pub-2481483129842770/3292365019';
+const APP_VERSION = '1.1.0';
 
 // Pages that show banner ads
 const BANNER_PAGES: string[] = ['menu', 'quests', 'dungeons'];
@@ -146,6 +148,7 @@ const ShopIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w
 const InventoryIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 lg:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>);
 const ReportIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 lg:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>);
 const AchievementIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 lg:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>);
+const SettingsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 lg:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>);
 const SkillIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 lg:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1031,6 +1034,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
         { id: 'shop', label: 'SHOP', icon: <ShopIcon /> },
         { id: 'inventory', label: 'INVENTORY', icon: <InventoryIcon /> },
         { id: 'achievements', label: 'ACHIEVEMENTS', icon: <AchievementIcon /> },
+        { id: 'settings', label: 'SETTINGS', icon: <SettingsIcon /> },
         { id: 'report', label: 'REPORTS', icon: <ReportIcon /> },
         { id: 'codex', label: 'CODEX', icon: <InfoIcon /> },
     ];
@@ -1060,7 +1064,8 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             case 'workshop': return <WorkshopPage inventory={data.inventory} onEnhance={data.enhanceGear} onAdvance={data.advanceGear} player={data.player} />;
             case 'shop': return <ShopPage player={data.player} inventory={data.inventory} onBuyItem={i => setConfirm({ title: 'System Exchange', message: `Authorize coin transfer for ${i.name}?`, onConfirm: () => data.buyItem(i) })} />;
             case 'inventory': return <InventoryPageWrapper inventory={data.inventory} player={data.player} onEquip={data.equipItem} onUnequip={data.unequipItem} onBreak={slot => setConfirm({ title: 'Break Curse', message: 'Permanently destroy cursed equipment using Light Orb?', isDangerous: true, onConfirm: () => data.breakGear(slot) })} />;
-            case 'codex': return <Codex onOpenExport={data.exportState} onOpenImport={data.importState} onSetBackground={() => {}} background={null} onNavigateToReport={() => navigateTo('report')} onLoginPress={!userEmail ? () => setShowAuthModal(true) : undefined} userEmail={userEmail} onSignOut={userEmail ? handleSignOut : undefined} />;
+            case 'settings': return <SettingsPage userEmail={userEmail} isPro={isPro} appVersion={APP_VERSION} onLoginPress={() => setShowAuthModal(true)} onSignOut={handleSignOut} onExport={data.exportState} onImport={data.importState} />;
+            case 'codex': return <Codex onOpenExport={data.exportState} onOpenImport={data.importState} onSetBackground={() => {}} background={null} onNavigateToReport={() => navigateTo('report')} />;
             case 'report': return <ReportExport player={data.player} completedQuests={data.completedQuests} dungeonHistory={data.dungeonHistory} achievements={data.achievements} inventory={data.inventory} onUpgradePro={() => handleShowUpgrade('System Reports')} isPro={isPro} />;
             default: return null;
         }

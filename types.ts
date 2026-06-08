@@ -255,7 +255,7 @@ export interface SystemNotification {
     type: 'success' | 'danger' | 'info' | 'warning' | 'achievement' | 'level_up';
 }
 
-export type Page = 'menu' | 'status' | 'stats' | 'quests' | 'add-quest' | 'history' | 'skills' | 'add-skill' | 'dungeons' | 'task-list' | 'achievements' | 'shop' | 'inventory' | 'workshop' | 'codex' | 'report';
+export type Page = 'menu' | 'status' | 'stats' | 'quests' | 'add-quest' | 'history' | 'skills' | 'add-skill' | 'dungeons' | 'task-list' | 'achievements' | 'shop' | 'inventory' | 'workshop' | 'codex' | 'report' | 'settings';
 
 export type PlayerDataEvent =
     | { type: 'xp_gain'; amount: number; source: string; }

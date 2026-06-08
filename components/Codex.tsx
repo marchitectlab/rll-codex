@@ -185,14 +185,6 @@ const codexData = {
                 content: `A skill's power is defined by its Grade, Mastery Tier, and Stars.\n\n- **Mastery Tiers:** Stars change color as you ascend (White -> Blue -> Purple -> Gold -> Red).\n- **Grade Promotion:** Reaching 5 stars allows a skill to promote to the next rank (e.g., E -> D).`
             },
         }
-    },
-    system: {
-        title: "System",
-        entries: {
-            account: { title: "Linked Account", content: "Link an account to sync your progress across devices and back up your data securely." },
-            report: { title: "System Reports", content: "Generate visual reports of your progress to track your journey to the pinnacle." },
-            data: { title: "Data Management", content: "Export or import your status. Proceed with caution." }
-        }
     }
 };
 
