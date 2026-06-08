@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import type { DistanceRunResult, Quest } from '../types';
 import { calculateDistanceQuestResult, formatDistance, formatDuration, formatPace } from '../lib/distanceQuest';
 
-type RunStatus = 'ready' | 'running' | 'summary';
+type RunStatus = 'ready' | 'acquiring' | 'running' | 'summary';
 type SummaryState = 'saved' | 'discarded';
 
 const MIN_RECORDABLE_DISTANCE_METERS = 400;
@@ -71,7 +71,7 @@ const RouteMap: React.FC<{ points: RunPoint[]; distanceMeters: number; gpsStatus
       zoomControl: false,
       attributionControl: false,
       preferCanvas: true,
-    }).setView([20, 0], 2);
+    }).setView([0, 0], 1);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -109,7 +109,14 @@ const RouteMap: React.FC<{ points: RunPoint[]; distanceMeters: number; gpsStatus
     route.setLatLngs(latLngs);
 
     if (latLngs.length === 0) {
-      map.setView([20, 0], 2);
+      if (startMarkerRef.current) {
+        startMarkerRef.current.remove();
+        startMarkerRef.current = null;
+      }
+      if (currentMarkerRef.current) {
+        currentMarkerRef.current.remove();
+        currentMarkerRef.current = null;
+      }
       return;
     }
 
@@ -145,7 +152,7 @@ const RouteMap: React.FC<{ points: RunPoint[]; distanceMeters: number; gpsStatus
       <div className="relative">
         <div ref={containerRef} className="w-full h-64 md:h-80 rounded border border-white/5 bg-slate-950" />
         {points.length === 0 && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/55 rounded">
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950 rounded">
             <p className="font-orbitron text-[10px] text-slate-300 uppercase tracking-[0.2em] text-center px-4">{gpsStatus}</p>
           </div>
         )}
@@ -196,6 +203,11 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
       return;
     }
 
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
     setDistanceMeters(0);
     setElapsedSeconds(0);
     setResult(null);
@@ -203,9 +215,9 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
     setRoutePoints([]);
     lastPointRef.current = null;
     stableFixCountRef.current = 0;
-    startedAtRef.current = Date.now();
-    setStatus('running');
-    setGpsStatus('Searching for GPS signal');
+    startedAtRef.current = null;
+    setStatus('acquiring');
+    setGpsStatus('Searching for high-accuracy GPS. Stay outdoors and keep the phone still.');
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       position => {
@@ -234,6 +246,11 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
 
         setGpsStatus(point.accuracy ? `GPS locked: ${Math.round(point.accuracy)} m accuracy` : 'GPS locked');
         setRoutePoints(current => current.length === 0 ? [point] : current);
+        if (!startedAtRef.current) {
+          startedAtRef.current = Date.now();
+          setElapsedSeconds(0);
+          setStatus('running');
+        }
 
         if (!previous) {
           setRoutePoints(current => current.length === 0 ? [point] : current);
@@ -264,8 +281,11 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
             ? 'GPS position unavailable.'
             : 'GPS signal timed out.';
         setGpsStatus(message);
+        if (!startedAtRef.current) {
+          setStatus('ready');
+        }
       },
-      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
     );
   };
 
@@ -349,10 +369,12 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
             </div>
           ) : (
             <div className="h-full flex flex-col justify-center text-center py-8">
-              <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{status === 'running' ? 'Run in progress' : 'Ready for deployment'}</p>
+              <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{status === 'running' ? 'Run in progress' : status === 'acquiring' ? 'Acquiring GPS' : 'Ready for deployment'}</p>
               <p className="text-xs md:text-sm text-gray-400 uppercase tracking-widest leading-relaxed max-w-xl mx-auto">
                 {status === 'running'
                   ? 'Keep the app open while running. GPS drift and sudden jumps are filtered out.'
+                  : status === 'acquiring'
+                    ? 'Waiting for a stable high-accuracy fix before starting the timer or counting distance.'
                   : `Start outside with location enabled. Runs under ${MIN_RECORDABLE_DISTANCE_METERS} m are discarded.`}
               </p>
               <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-widest mt-5">{gpsStatus}</p>
@@ -363,6 +385,10 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
         {status === 'running' ? (
           <button onClick={finishRun} className="font-orbitron bg-red-700 hover:bg-red-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-red-400/50">
             Finish Run
+          </button>
+        ) : status === 'acquiring' ? (
+          <button disabled className="font-orbitron bg-slate-800 text-slate-400 px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-white/10 cursor-wait">
+            Acquiring GPS Lock
           </button>
         ) : status === 'ready' ? (
           <button onClick={startRun} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50">
