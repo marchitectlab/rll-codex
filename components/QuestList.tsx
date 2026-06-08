@@ -8,6 +8,7 @@ import { ATTRIBUTES } from '../constants';
 interface QuestListProps {
   quests: Quest[];
   onComplete: (questId: string) => void;
+  onStartDistance?: (quest: Quest) => void;
   onDelete: (questId: string) => void;
   onFail: (questId: string) => void;
 }
@@ -30,10 +31,10 @@ const filterButtonStyles: Record<Difficulty, { border: string; text: string; bgH
     [Difficulty.X]: { border: 'border-red-900', text: 'text-red-400', bgHover: 'hover:bg-black/80', activeBg: 'bg-black/50' },
 };
 
-export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onDelete, onFail }) => {
+export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onStartDistance, onDelete, onFail }) => {
   const [activeTab, setActiveTab] = useState<'system' | 'custom'>('system');
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<Quest['type'] | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<Quest['type'] | 'distance' | 'all'>('all');
   const [attributeFilter, setAttributeFilter] = useState<Attribute | 'all'>('all');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'difficulty', direction: 'asc' });
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
@@ -52,7 +53,7 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onDele
     const questsForTab = activeTab === 'system' ? systemQuests : customQuests;
     const filtered = questsForTab.filter(quest => {
         const difficultyMatch = difficultyFilter === 'all' || quest.difficulty === difficultyFilter;
-        const typeMatch = typeFilter === 'all' || quest.type === typeFilter;
+        const typeMatch = typeFilter === 'all' || (typeFilter === 'distance' ? quest.questMode === 'distance' : quest.type === typeFilter);
         const attributeMatch = attributeFilter === 'all' || quest.attributes.includes(attributeFilter);
         return difficultyMatch && typeMatch && attributeMatch;
     });
@@ -73,7 +74,7 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onDele
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
   };
   
-  const typeFilterOptions = ['all', 'repetitive', 'one-time'] as const;
+  const typeFilterOptions = ['all', 'repetitive', 'one-time', 'distance'] as const;
 
   return (
     <>
@@ -144,7 +145,7 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onDele
       ) : (
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
           {sortedAndFilteredQuests.map(quest => (
-            <QuestItem key={quest.id} quest={quest} onComplete={onComplete} onDelete={!quest.isSystemQuest ? onDelete : undefined} onFail={onFail} />
+            <QuestItem key={quest.id} quest={quest} onComplete={onComplete} onStartDistance={onStartDistance} onDelete={!quest.isSystemQuest ? onDelete : undefined} onFail={onFail} />
           ))}
         </div>
       )}

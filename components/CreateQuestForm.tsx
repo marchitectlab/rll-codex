@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Difficulty, Quest, Attribute } from '../types';
 import { ATTRIBUTES } from '../constants';
 
 interface CreateQuestFormProps {
-  addQuest: (name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string) => void;
+  addQuest: (name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode?: Quest['questMode']) => void;
   onWatchAd: (onGranted: () => void) => void;
 }
 
@@ -13,7 +13,12 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.E);
   const [type, setType] = useState<Quest['type']>('repetitive');
+  const [questMode, setQuestMode] = useState<Quest['questMode']>('standard');
   const [selectedAttributes, setSelectedAttributes] = useState<Attribute[]>([]);
+
+  useEffect(() => {
+    if (questMode === 'distance') setDifficulty(Difficulty.E);
+  }, [questMode]);
 
   const handleAttributeToggle = (attribute: Attribute) => {
     setSelectedAttributes(prev =>
@@ -32,12 +37,14 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
           difficulty,
           type,
           selectedAttributes,
-          description.trim()
+          description.trim(),
+          questMode
         );
         setName('');
         setDescription('');
         setDifficulty(Difficulty.E);
         setType('repetitive');
+        setQuestMode('standard');
         setSelectedAttributes([]);
       };
       onWatchAd(doCreate);
@@ -99,12 +106,26 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
+          <label className="block text-sm font-bold text-gray-300 mb-1">Quest Mode</label>
+          <select value={questMode} onChange={(e) => setQuestMode(e.target.value as Quest['questMode'])}
+              className="w-full bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              <option value="standard">Standard Quest</option>
+              <option value="distance">Distance Quest</option>
+          </select>
+          {questMode === 'distance' && (
+            <p className="text-[10px] text-blue-300/70 mt-1 uppercase tracking-widest">Final grade is calculated from GPS distance and pace.</p>
+          )}
+        </div>
+        <div>
           <label className="block text-sm font-bold text-gray-300 mb-1">Difficulty</label>
           <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+              disabled={questMode === 'distance'}
               className={`w-full bg-gray-900/70 border-2 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${difficultyColors[difficulty]}`}>
               {difficultyOptions}
           </select>
         </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-bold text-gray-300 mb-1">Type</label>
           <select value={type} onChange={(e) => setType(e.target.value as Quest['type'])}

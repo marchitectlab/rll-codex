@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import type { CompletedQuest, DungeonHistoryEntry } from '../types';
 import { Difficulty } from '../types';
 import { XP_PER_DIFFICULTY, DUNGEONS } from '../constants';
+import { formatDistance, formatPace } from '../lib/distanceQuest';
 
 // --- TYPES & INTERFACES ---
 interface QuestHistoryProps {
@@ -53,7 +54,7 @@ const HistoryDetailModal: React.FC<{ date: Date; activities: DailyActivity; onCl
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
                 </div>
                 <div className="p-4 max-h-[60vh] overflow-y-auto space-y-4">
-                    {activities.quests.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Activities Recorded</h3><div className="space-y-2">{activities.quests.map(q => <div key={q.completionId} className={`p-2 bg-gray-900/50 rounded-md text-sm ${q.difficulty === Difficulty.X ? 'border border-red-800' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[q.difficulty].text}`}>[{q.difficulty}]</span>{q.name} - <span className={q.difficulty === Difficulty.X ? 'text-red-500' : 'text-yellow-400'}>{q.difficulty === Difficulty.X ? 'PENALTY APPLIED' : `${XP_PER_DIFFICULTY[q.difficulty]} XP`}</span></div>)}</div></div>}
+                    {activities.quests.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Activities Recorded</h3><div className="space-y-2">{activities.quests.map(q => <div key={q.completionId} className={`p-2 bg-gray-900/50 rounded-md text-sm ${q.difficulty === Difficulty.X ? 'border border-red-800' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[q.difficulty].text}`}>[{q.difficulty}]</span>{q.name} - <span className={q.difficulty === Difficulty.X ? 'text-red-500' : 'text-yellow-400'}>{q.difficulty === Difficulty.X ? 'PENALTY APPLIED' : `${q.earnedXp ?? XP_PER_DIFFICULTY[q.difficulty]} XP`}</span>{q.runStats && <div className="mt-1 text-[10px] uppercase tracking-widest text-cyan-300/80">{formatDistance(q.runStats.distanceMeters)} | {formatPace(q.runStats.paceSecondsPerKm)} | {q.runStats.modifierLabel}</div>}</div>)}</div></div>}
                     {activities.dungeons.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Dungeons</h3><div className="space-y-2">{activities.dungeons.map(d => <div key={d.completedAt} className={`p-2 bg-gray-900/50 rounded-md text-sm ${d.status === 'failed' ? 'opacity-60' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[d.grade].text}`}>[{d.grade}]</span>{d.name} - <span className={d.status === 'cleared' ? 'text-green-400' : 'text-red-400'}>{d.status}</span></div>)}</div></div>}
                 </div>
             </div>
@@ -81,7 +82,7 @@ export const QuestHistory: React.FC<QuestHistoryProps> = ({ completedQuests, dun
             const dateStr = toLocalDateKey(quest.completedAt);
             const entry = data.get(dateStr) || { quests: [], dungeons: [], totalXp: 0 };
             entry.quests.push(quest);
-            entry.totalXp += XP_PER_DIFFICULTY[quest.difficulty] || 0;
+            entry.totalXp += quest.earnedXp ?? (XP_PER_DIFFICULTY[quest.difficulty] || 0);
             data.set(dateStr, entry);
         });
 

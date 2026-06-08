@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Player, Quest, Difficulty, PlayerDataState, CompletedQuest, Skill, Attribute, SkillPrerequisite, SkillFolder, SkillCategory, ActiveDungeonState, DungeonCooldown, DungeonHistoryEntry, Inventory, Achievement, ShopItem, EquipmentSlot, PlayerDataEvent, WeeklyPlan, DayOfWeek, PlannerItem, MaterialItem, SystemNotification, DungeonKeys } from '../types';
+import { Player, Quest, Difficulty, PlayerDataState, CompletedQuest, Skill, Attribute, SkillPrerequisite, SkillFolder, SkillCategory, ActiveDungeonState, DungeonCooldown, DungeonHistoryEntry, Inventory, Achievement, ShopItem, EquipmentSlot, PlayerDataEvent, WeeklyPlan, DayOfWeek, PlannerItem, MaterialItem, SystemNotification, DungeonKeys, DistanceRunResult } from '../types';
 import { Rank, Difficulty as DifficultyEnum } from '../types';
 import { XP_PER_DIFFICULTY, getXpToNextLevel, getRankForLevel, TRAINING_PER_HALF_STAR, SKILL_UNLOCK_REQUIREMENTS, XP_FOR_SKILL_UNLOCK, STAT_POINTS_PER_DIFFICULTY, DUNGEONS, SYSTEM_QUESTS, XP_FOR_SKILL_ASCENSION, QUEST_COIN_REWARDS, ACHIEVEMENTS_DATA, MATERIALS, ADVANCEMENT_TRAITS, X_RANK_PENALTY_OVERRIDE, DAILY_XP_GOAL, ENHANCEMENT_REQUIREMENT, getLevelRequirement, DUNGEON_LEVEL_REQUIREMENTS, DUNGEON_KEYS_PER_DAY, DUNGEON_KEYS_PRO_PER_DAY, AD_BONUS_KEYS_PER_DAY } from '../constants';
+import { calculateDistanceQuestResult, formatDistance, formatPace } from '../lib/distanceQuest';
 
 const DATA_VERSION = 11;
 const Berserker_GEAR_IDS = ['armor_berserker'];
@@ -476,6 +477,66 @@ export const usePlayerData = () => {
         }
         // Release the lock
         setTimeout(() => processingQuests.current.delete(id), 500);
+    }, [state.quests, addNotification, gainXp, checkAchievements]);
+
+    const completeDistanceQuest = useCallback((id: string, distanceMeters: number, durationSeconds: number): DistanceRunResult | null => {
+        if (processingQuests.current.has(id)) return null;
+
+        const q = state.quests.find(x => x.id === id);
+        if (!q) return null;
+
+        processingQuests.current.add(id);
+
+        const result = calculateDistanceQuestResult(distanceMeters, durationSeconds);
+        const completedQuest: CompletedQuest = {
+            ...q,
+            difficulty: result.finalGrade,
+            name: `${result.title}: ${q.name}`,
+            completedAt: new Date().toISOString(),
+            completionId: `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            earnedXp: result.totalXp,
+            runStats: result,
+        };
+        const statPoints = STAT_POINTS_PER_DIFFICULTY[result.finalGrade] || 0;
+        const coins = QUEST_COIN_REWARDS[result.finalGrade] || 0;
+
+        setState(prevState => {
+            const newAttributes = { ...prevState.player.attributes };
+            if (q.attributes && q.attributes.length > 0 && statPoints > 0) {
+                q.attributes.forEach((attr) => {
+                    newAttributes[attr] = (newAttributes[attr] || 0) + statPoints;
+                });
+            }
+
+            return {
+                ...prevState,
+                quests: q.type === 'one-time' ? prevState.quests.filter(quest => quest.id !== id) : prevState.quests,
+                completedQuests: [completedQuest, ...prevState.completedQuests],
+                player: {
+                    ...prevState.player,
+                    shopCoins: prevState.player.shopCoins + coins,
+                    attributes: newAttributes,
+                },
+            };
+        });
+
+        if (q.attributes && q.attributes.length > 0 && statPoints > 0) {
+            q.attributes.forEach((attr) => {
+                addNotification('STAT INCREASE', `${attr.toUpperCase()} +${statPoints}`, 'success');
+            });
+        }
+        gainXp(result.totalXp, result.title, result.finalGrade);
+        checkAchievements('COMPLETE_QUEST', { difficulty: result.finalGrade });
+        addNotification('RUN COMPLETE', `${formatDistance(result.distanceMeters)} at ${formatPace(result.paceSecondsPerKm)}. Grade [${result.finalGrade}].`, 'success');
+        if (result.paceBonusXp > 0) {
+            addNotification('PACE BONUS', `+${result.paceBonusXp} XP awarded.`, 'achievement');
+        }
+        if (coins > 0) {
+            addNotification('REWARD GRANTED', `Received ${coins} Shop Coins.`, 'info');
+        }
+
+        setTimeout(() => processingQuests.current.delete(id), 500);
+        return result;
     }, [state.quests, addNotification, gainXp, checkAchievements]);
 
 
@@ -985,12 +1046,12 @@ export const usePlayerData = () => {
         }));
     }, []);
 
-    const addQuest = useCallback((name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string) => {
+    const addQuest = useCallback((name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode: Quest['questMode'] = 'standard') => {
         setState(s => ({
             ...s,
             quests: [...s.quests, {
                 id: `q-${Date.now()}`,
-                name, difficulty, type, attributes, description
+                name, difficulty, type, attributes, description, questMode
             }]
         }));
         addNotification('QUEST INITIALIZED', `New objective registered: ${name}`, 'info');
@@ -1081,7 +1142,7 @@ export const usePlayerData = () => {
 
     return { 
         ...state, 
-        gainXp, clearActiveDungeon, enhanceGear, advanceGear, toggleTaskListTask, addTaskListTask, deleteTaskListTask, addQuest, deleteQuest, failQuest, completeQuest, startDungeon, progressDungeon, failActiveDungeon, buyItem, earnDungeonKey, setProDungeonKeys, 
+        gainXp, clearActiveDungeon, enhanceGear, advanceGear, toggleTaskListTask, addTaskListTask, deleteTaskListTask, addQuest, deleteQuest, failQuest, completeQuest, completeDistanceQuest, startDungeon, progressDungeon, failActiveDungeon, buyItem, earnDungeonKey, setProDungeonKeys, 
         renamePlayer: (newName: string) => { if (newName.trim()) { setState(s => ({ ...s, player: { ...s.player, name: newName.trim() } })); addNotification('IDENTITY UPDATED', `Recognized as [${newName}].`, 'info'); } }, 
         equipItem: (item: ShopItem) => {
             setState(s => {

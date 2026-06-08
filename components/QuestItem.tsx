@@ -7,6 +7,7 @@ import { XP_PER_DIFFICULTY, QUEST_COIN_REWARDS } from '../constants';
 interface QuestItemProps {
   quest: Quest;
   onComplete: (questId: string) => void;
+  onStartDistance?: (quest: Quest) => void;
   onDelete?: (questId: string) => void;
   onFail?: (questId: string) => void;
 }
@@ -38,7 +39,7 @@ const CoinIcon = () => (
     </svg>
 );
 
-export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onDelete, onFail }) => {
+export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStartDistance, onDelete, onFail }) => {
   const styles = getGradeStyles(quest.difficulty);
   const xp = XP_PER_DIFFICULTY[quest.difficulty];
   const coins = QUEST_COIN_REWARDS[quest.difficulty];
@@ -47,9 +48,14 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onDelet
   const [isProcessing, setIsProcessing] = useState(false);
 
   const hasFailureCondition = !!quest.failurePenalty;
+  const isDistanceQuest = quest.questMode === 'distance';
 
   const handleAction = () => {
     if (isProcessing) return;
+    if (isDistanceQuest) {
+      onStartDistance?.(quest);
+      return;
+    }
     setIsProcessing(true);
     onComplete(quest.id);
     // Local reset after some time just in case, but usually quest is removed/updated
@@ -91,7 +97,11 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onDelet
                 <div className="min-w-0 flex-grow pr-2 md:pr-4">
                     <p className="font-orbitron font-black text-white text-[10px] md:text-[11px] leading-tight md:leading-[20px] uppercase tracking-[0.05em] md:tracking-[0.1em] truncate mb-0.5 md:mb-1">{quest.name}</p>
                     <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                        {xp > 0 && (
+                        {isDistanceQuest ? (
+                             <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-cyan-300">
+                                GPS Run: E to S+ based on distance
+                             </p>
+                        ) : xp > 0 && (
                              <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${styles.text}`}>
                                 {hasFailureCondition ? `Loss: -${quest.failurePenalty?.xp} XP` : `Gain: +${xp} XP`}
                              </p>
@@ -107,7 +117,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onDelet
             
             <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 md:gap-3 flex-shrink-0 w-full sm:w-auto ${quest.attributes.length > 0 ? 'sm:mt-4' : ''}`}>
                 <span className="text-[7px] md:text-[8px] font-black inline-block py-0.5 md:py-1 px-2 md:px-3 rounded-sm uppercase tracking-[0.2em] md:tracking-[0.3em] border border-white/10 bg-black/60 text-gray-500">
-                    {quest.type.replace('-', ' ')}
+                    {isDistanceQuest ? 'distance' : quest.type.replace('-', ' ')}
                 </span>
                 {hasFailureCondition ? (
                      <button
@@ -119,9 +129,9 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onDelet
                 ) : (
                     <button
                         onClick={handleAction}
-                        className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-sm uppercase text-[9px] md:text-[10px] font-black tracking-widest transition-all shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] w-20 md:w-[100px] border border-blue-400/40"
+                        className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-sm uppercase text-[9px] md:text-[10px] font-black tracking-widest transition-all shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] w-24 md:w-[112px] border border-blue-400/40"
                     >
-                        Clear
+                        {isDistanceQuest ? 'Start Run' : 'Clear'}
                     </button>
                 )}
             </div>

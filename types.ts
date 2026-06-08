@@ -41,6 +41,7 @@ export interface Quest {
   description?: string;
   difficulty: Difficulty;
   type: 'repetitive' | 'one-time';
+  questMode?: 'standard' | 'distance';
   attributes: Attribute[];
   isSystemQuest?: boolean;
   failurePenalty?: {
@@ -52,6 +53,21 @@ export interface Quest {
 export interface CompletedQuest extends Quest {
   completedAt: string;
   completionId: string;
+  earnedXp?: number;
+  runStats?: DistanceRunResult;
+}
+
+export interface DistanceRunResult {
+  distanceMeters: number;
+  durationSeconds: number;
+  paceSecondsPerKm: number | null;
+  baseGrade: Difficulty;
+  finalGrade: Difficulty;
+  baseXp: number;
+  paceBonusXp: number;
+  totalXp: number;
+  title: string;
+  modifierLabel: string;
 }
 
 export interface SkillPrerequisite {
