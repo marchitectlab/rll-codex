@@ -1,0 +1,74 @@
+import React, { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { useAuth } from './hooks/useAuth';
+import { initializeRevenueCat } from './lib/revenuecat';
+import { requestNotificationPermission } from './lib/notifications';
+import App from './App';
+
+const LoadingScreen: React.FC = () => (
+  <div
+    className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center"
+    style={{ backgroundImage: `radial-gradient(circle at top, rgba(37, 99, 235, 0.15), transparent)` }}
+  >
+    <h1
+      className="font-orbitron text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-500 uppercase tracking-tighter mb-6"
+      style={{ filter: 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.5))' }}
+    >
+      R.L.L
+    </h1>
+    <div className="flex gap-2">
+      {[0, 1, 2].map(i => (
+        <div key={i} className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+      ))}
+    </div>
+    <p className="font-orbitron text-[9px] text-blue-500/50 uppercase tracking-widest mt-4 animate-pulse">
+      Initializing System...
+    </p>
+  </div>
+);
+
+const AppRoot: React.FC = () => {
+  const { user, loading, signIn, signUp, signOut, resetPassword, error, clearError } = useAuth();
+
+  // Initialize RevenueCat ANONYMOUSLY on app start so prices are visible before login.
+  // This runs immediately — no waiting for auth.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    initializeRevenueCat(); // anonymous — no userId
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Once auth resolves and a user is known, re-initialize RC to link their identity.
+  // RC handles de-duplication of configure calls internally.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    if (loading) return;
+    if (user?.id) {
+      initializeRevenueCat(user.id);
+    }
+  }, [loading, user?.id]);
+
+  // Request device notification permission once auth is settled.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    if (loading) return;
+    requestNotificationPermission();
+  }, [loading]);
+
+  if (loading) return <LoadingScreen />;
+
+  return (
+    <App
+      userEmail={user?.email}
+      userId={user?.id}
+      onSignIn={signIn}
+      onSignUp={signUp}
+      onSignOut={signOut}
+      onResetPassword={resetPassword}
+      authError={error}
+      onClearAuthError={clearError}
+      authLoading={loading}
+    />
+  );
+};
+
+export default AppRoot;
