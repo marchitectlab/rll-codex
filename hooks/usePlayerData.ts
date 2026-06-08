@@ -1046,12 +1046,12 @@ export const usePlayerData = () => {
         }));
     }, []);
 
-    const addQuest = useCallback((name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode: Quest['questMode'] = 'standard') => {
+    const addQuest = useCallback((name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode: Quest['questMode'] = 'standard', timerConfig?: Quest['timerConfig']) => {
         setState(s => ({
             ...s,
             quests: [...s.quests, {
                 id: `q-${Date.now()}`,
-                name, difficulty, type, attributes, description, questMode
+                name, difficulty, type, attributes, description, questMode, timerConfig
             }]
         }));
         addNotification('QUEST INITIALIZED', `New objective registered: ${name}`, 'info');

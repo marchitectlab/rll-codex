@@ -41,7 +41,13 @@ export interface Quest {
   description?: string;
   difficulty: Difficulty;
   type: 'repetitive' | 'one-time';
-  questMode?: 'standard' | 'distance';
+  questMode?: 'standard' | 'distance' | 'countdown' | 'rounds';
+  timerConfig?: {
+    durationSeconds?: number;
+    roundCount?: number;
+    roundSeconds?: number;
+    intervalSeconds?: number;
+  };
   attributes: Attribute[];
   isSystemQuest?: boolean;
   failurePenalty?: {

@@ -4,7 +4,7 @@ import { Difficulty, Quest, Attribute } from '../types';
 import { ATTRIBUTES } from '../constants';
 
 interface CreateQuestFormProps {
-  addQuest: (name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode?: Quest['questMode']) => void;
+  addQuest: (name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode?: Quest['questMode'], timerConfig?: Quest['timerConfig']) => void;
   onWatchAd: (onGranted: () => void) => void;
 }
 
@@ -14,6 +14,10 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.E);
   const [type, setType] = useState<Quest['type']>('repetitive');
   const [questMode, setQuestMode] = useState<Quest['questMode']>('standard');
+  const [durationMinutes, setDurationMinutes] = useState(10);
+  const [roundCount, setRoundCount] = useState(3);
+  const [roundSeconds, setRoundSeconds] = useState(60);
+  const [intervalSeconds, setIntervalSeconds] = useState(30);
   const [selectedAttributes, setSelectedAttributes] = useState<Attribute[]>([]);
 
   useEffect(() => {
@@ -32,19 +36,33 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
     e.preventDefault();
     if (name.trim()) {
       const doCreate = () => {
+        const timerConfig: Quest['timerConfig'] = questMode === 'countdown'
+          ? { durationSeconds: Math.max(1, durationMinutes) * 60 }
+          : questMode === 'rounds'
+            ? {
+                roundCount: Math.max(1, roundCount),
+                roundSeconds: Math.max(5, roundSeconds),
+                intervalSeconds: Math.max(0, intervalSeconds),
+              }
+            : undefined;
         addQuest(
           name.trim(),
           difficulty,
           type,
           selectedAttributes,
           description.trim(),
-          questMode
+          questMode,
+          timerConfig
         );
         setName('');
         setDescription('');
         setDifficulty(Difficulty.E);
         setType('repetitive');
         setQuestMode('standard');
+        setDurationMinutes(10);
+        setRoundCount(3);
+        setRoundSeconds(60);
+        setIntervalSeconds(30);
         setSelectedAttributes([]);
       };
       onWatchAd(doCreate);
@@ -111,9 +129,17 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
               className="w-full bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
               <option value="standard">Standard Quest</option>
               <option value="distance">Distance Quest</option>
+              <option value="countdown">Countdown Quest</option>
+              <option value="rounds">Round-Based Quest</option>
           </select>
           {questMode === 'distance' && (
             <p className="text-[10px] text-blue-300/70 mt-1 uppercase tracking-widest">Final grade is calculated from GPS distance and pace.</p>
+          )}
+          {questMode === 'countdown' && (
+            <p className="text-[10px] text-blue-300/70 mt-1 uppercase tracking-widest">Timer starts on entry and auto-completes at zero.</p>
+          )}
+          {questMode === 'rounds' && (
+            <p className="text-[10px] text-blue-300/70 mt-1 uppercase tracking-widest">Cycles work rounds and intervals until all rounds finish.</p>
           )}
         </div>
         <div>
@@ -135,6 +161,40 @@ export const CreateQuestForm: React.FC<CreateQuestFormProps> = ({ addQuest, onWa
           </select>
         </div>
       </div>
+      {questMode === 'countdown' && (
+        <div>
+          <label className="block text-sm font-bold text-gray-300 mb-1">Countdown Duration</label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min={1}
+              max={240}
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(Number(e.target.value))}
+              className="w-28 bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+            <span className="font-orbitron text-[10px] text-gray-500 uppercase tracking-widest">minutes</span>
+          </div>
+        </div>
+      )}
+      {questMode === 'rounds' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-gray-300 mb-1">Rounds</label>
+            <input type="number" min={1} max={99} value={roundCount} onChange={(e) => setRoundCount(Number(e.target.value))} className="w-full bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-300 mb-1">Round Duration</label>
+            <input type="number" min={5} max={3600} value={roundSeconds} onChange={(e) => setRoundSeconds(Number(e.target.value))} className="w-full bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+            <p className="text-[9px] text-gray-600 uppercase tracking-widest mt-1">seconds</p>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-300 mb-1">Interval</label>
+            <input type="number" min={0} max={1800} value={intervalSeconds} onChange={(e) => setIntervalSeconds(Number(e.target.value))} className="w-full bg-gray-900/70 border-2 border-gray-600 rounded-md px-4 py-2 font-orbitron focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+            <p className="text-[9px] text-gray-600 uppercase tracking-widest mt-1">seconds</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end pt-2">
           <button type="submit"

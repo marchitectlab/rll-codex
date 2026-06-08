@@ -9,6 +9,7 @@ import { usePro } from './hooks/usePro';
 import { QuestHistory } from './components/QuestHistory';
 import { ProPurchaseModal } from './components/ProPurchaseModal';
 import { DistanceRunPage } from './components/DistanceRunPage';
+import { QuestRunnerPage } from './components/QuestRunnerPage';
 import type { Player, Quest, Difficulty, ActiveDungeonState, DungeonCooldown, DungeonHistoryEntry, Achievement, ShopItem, Inventory, EquipmentSlot, SystemNotification, Page, DayOfWeek, Attribute, Dungeon, DungeonKeys } from './types';
 import { Difficulty as DifficultyEnum } from './types';
 import { DUNGEONS, SHOP_ITEMS, getLevelRequirement, DUNGEON_LEVEL_REQUIREMENTS, DUNGEON_KEYS_PER_DAY, DUNGEON_KEYS_PRO_PER_DAY, AD_BONUS_KEYS_PER_DAY } from './constants';
@@ -357,12 +358,13 @@ const AchievementsPage: React.FC<{ achievements: Record<string, Achievement> }> 
 const QuestLogPage: React.FC<{
     quests: Quest[];
     onComplete: (id: string) => void;
+    onStartQuest: (quest: Quest) => void;
     onStartDistance: (quest: Quest) => void;
     onDelete: (id: string) => void;
     onFail: (id: string) => void;
     onAddQuest: (name: string, difficulty: Difficulty, type: 'repetitive' | 'one-time', attributes: Attribute[], description: string, questMode?: Quest['questMode']) => void;
     onWatchAdForQuest: (onGranted: () => void) => void;
-}> = ({ quests, onComplete, onStartDistance, onDelete, onFail, onAddQuest, onWatchAdForQuest }) => {
+}> = ({ quests, onComplete, onStartQuest, onStartDistance, onDelete, onFail, onAddQuest, onWatchAdForQuest }) => {
     const [view, setView] = useState<'list' | 'add'>('list');
     return (
         <div className="space-y-6">
@@ -374,7 +376,7 @@ const QuestLogPage: React.FC<{
             </div>
             
             {view === 'list' ? (
-                <QuestList quests={quests} onComplete={onComplete} onStartDistance={onStartDistance} onDelete={onDelete} onFail={onFail} />
+                <QuestList quests={quests} onComplete={onComplete} onStartQuest={onStartQuest} onStartDistance={onStartDistance} onDelete={onDelete} onFail={onFail} />
             ) : (
                 <div className="glass-panel p-4 md:p-8 rounded-lg border-blue-500/30">
                     <CreateQuestForm
@@ -831,6 +833,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const [upgradeFeatureName, setUpgradeFeatureName] = useState('');
     const [activeDistanceQuest, setActiveDistanceQuest] = useState<Quest | null>(null);
+    const [activeQuestRunner, setActiveQuestRunner] = useState<Quest | null>(null);
     const promoCountRef = React.useRef(0);
     const prevLevelRef = React.useRef<number | null>(null);
     const pageRef = React.useRef<Page | 'startup'>('startup');
@@ -990,6 +993,17 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
         setActiveDistanceQuest(quest);
     }, []);
 
+    const handleStartQuestRunner = useCallback((quest: Quest) => {
+        setActiveQuestRunner(quest);
+    }, []);
+
+    const handleRunnerComplete = useCallback((id: string) => {
+        void (async () => {
+            if (!isPro) await showInterstitialAd();
+            data.completeQuest(id);
+        })();
+    }, [data, isPro]);
+
     // Watch ad for quest — grant immediately if Pro
     const handleWatchAdForQuest = useCallback((onGranted: () => void) => {
         if (isPro) { onGranted(); return; }
@@ -1038,7 +1052,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             );
             case 'status': return <StatusPage player={data.player} onRename={data.renamePlayer} />;
             case 'achievements': return <AchievementsPage achievements={data.achievements} />;
-            case 'quests': return <QuestLogPage quests={data.quests} onComplete={handleCompleteQuest} onStartDistance={handleStartDistanceQuest} onDelete={id => setConfirm({ title: 'Erase Entry', message: 'Permanently purge this quest record?', isDangerous: true, onConfirm: () => data.deleteQuest(id) })} onFail={id => data.failQuest(id)} onAddQuest={data.addQuest} onWatchAdForQuest={handleWatchAdForQuest} />;
+            case 'quests': return <QuestLogPage quests={data.quests} onComplete={handleCompleteQuest} onStartQuest={handleStartQuestRunner} onStartDistance={handleStartDistanceQuest} onDelete={id => setConfirm({ title: 'Erase Entry', message: 'Permanently purge this quest record?', isDangerous: true, onConfirm: () => data.deleteQuest(id) })} onFail={id => data.failQuest(id)} onAddQuest={data.addQuest} onWatchAdForQuest={handleWatchAdForQuest} />;
             case 'skills': return <SkillsPage skills={data.skills} skillFolders={data.skillFolders} categories={data.categories} improveSkill={data.improveSkill} addSkill={data.addSkill} addSkillFolder={data.addSkillFolder} addCategory={data.addCategory} onDeleteSkill={data.deleteSkill} onDeleteSkillFolder={data.deleteSkillFolder} onDeleteCategory={data.deleteCategory} />;
             case 'dungeons': return <DungeonsPage onStartDungeon={d => setConfirm({ title: 'Enter Gate', message: `Proceed into [${d.grade}] Gate: ${d.name}? Danger level is high.`, onConfirm: () => data.startDungeon(d.id) })} activeDungeon={data.activeDungeon} dungeonCooldowns={data.dungeonCooldowns} onClearDungeon={handleClearDungeon} onFailDungeon={data.failActiveDungeon} onProgressDungeon={data.progressDungeon} dungeonHistory={data.dungeonHistory} playerLevel={data.player.level} dungeonKeys={data.dungeonKeys} isPro={isPro} onEarnKey={() => showRewardedAd(data.earnDungeonKey)} />;
             case 'history': return <QuestHistory completedQuests={data.completedQuests} dungeonHistory={data.dungeonHistory} onUpgradePro={() => handleShowUpgrade('Detailed History Log')} isPro={isPro} />;
@@ -1101,6 +1115,16 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
                 quest={activeDistanceQuest}
                 onCancel={() => setActiveDistanceQuest(null)}
                 onFinish={data.completeDistanceQuest}
+            />
+        );
+    }
+
+    if (activeQuestRunner) {
+        return (
+            <QuestRunnerPage
+                quest={activeQuestRunner}
+                onCancel={() => setActiveQuestRunner(null)}
+                onComplete={handleRunnerComplete}
             />
         );
     }
