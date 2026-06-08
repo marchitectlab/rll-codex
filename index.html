@@ -8,15 +8,33 @@
     <title>Real Life Leveling</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
       * { touch-action: manipulation; }
+      html {
+        font-size: 14px;
+      }
       body {
-        font-family: 'Roboto', sans-serif;
+        font-family: 'Rajdhani', sans-serif;
         background-color: #020617;
+        font-size: 0.95rem;
+        letter-spacing: 0;
       }
       .font-orbitron {
         font-family: 'Orbitron', sans-serif;
+      }
+      .font-system-mono {
+        font-family: 'Share Tech Mono', monospace;
+      }
+      h1, h2, h3, .font-orbitron {
+        letter-spacing: 0.08em;
+      }
+      button, input, select, textarea {
+        font-family: inherit;
+        letter-spacing: 0;
+      }
+      @media (min-width: 768px) {
+        html { font-size: 14.5px; }
       }
 
       /* Glassmorphism Panels */

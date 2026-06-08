@@ -52,8 +52,11 @@ interface SkillNodeProps {
     onDelete: (skillId: string) => void;
     isPrereqsMet: boolean;
     prereqDetails: string;
+    connectedSkills: Skill[];
+    isExpanded: boolean;
+    onToggle: () => void;
 }
-const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPrereqsMet, prereqDetails }) => {
+const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPrereqsMet, prereqDetails, connectedSkills, isExpanded, onToggle }) => {
     const styles = difficultyStyles[skill.grade];
     const masteryLevel = skill.masteryLevel || 0;
     const isHighTier = [Difficulty.S, Difficulty.S_PLUS, Difficulty.X].includes(skill.originalGrade);
@@ -101,7 +104,7 @@ const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPre
         const unlockRequirement = SKILL_UNLOCK_REQUIREMENTS[skill.grade];
         const unlockPercentage = (skill.unlockProgress / unlockRequirement) * 100;
         return (
-            <div ref={nodeRef} data-skill-id={skill.id} onMouseEnter={() => !isPrereqsMet && setTooltipVisible(true)} onMouseLeave={() => setTooltipVisible(false)} className={`glass-panel group relative p-3 rounded-lg border w-64 flex-shrink-0 ${styles.bg} ${styles.border} transition-all duration-300 ${styles.shadow} ${!isPrereqsMet ? 'opacity-40 grayscale-[0.5]' : ''} ${pulseAnimationClass}`}>
+            <div ref={nodeRef} data-skill-id={skill.id} onClick={onToggle} onMouseEnter={() => !isPrereqsMet && setTooltipVisible(true)} onMouseLeave={() => setTooltipVisible(false)} className={`glass-panel group relative p-3 rounded-lg border w-64 flex-shrink-0 cursor-pointer ${styles.bg} ${styles.border} transition-all duration-300 ${styles.shadow} ${!isPrereqsMet ? 'opacity-40 grayscale-[0.5]' : ''} ${pulseAnimationClass}`}>
                 <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
                     {!isPrereqsMet && <div className="text-gray-400"><InfoIcon/></div>}
                      <button onClick={(e) => { e.stopPropagation(); onDelete(skill.id); }} className="p-1 rounded-full bg-gray-900/50 text-gray-500 hover:bg-red-800/70 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -118,12 +121,22 @@ const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPre
                         <div className="absolute inset-0 flex items-center justify-center"><span className="text-[9px] font-orbitron font-bold text-white z-10">{skill.unlockProgress}/{unlockRequirement}</span></div>
                     </div>
                     <div className="flex flex-col items-center gap-1">
-                        <button onClick={() => onImprove(skill.id)} disabled={isDisabled} className="font-orbitron bg-gray-700/80 text-white px-2 py-1 rounded-sm text-[9px] font-bold tracking-widest transition-all duration-300 shadow-md enabled:hover:bg-gray-600 disabled:opacity-50 w-16 text-center border border-gray-500/30">
+                        <button onClick={(e) => { e.stopPropagation(); onImprove(skill.id); }} disabled={isDisabled} className="font-orbitron bg-gray-700/80 text-white px-2 py-1 rounded-sm text-[9px] font-bold tracking-widest transition-all duration-300 shadow-md enabled:hover:bg-gray-600 disabled:opacity-50 w-16 text-center border border-gray-500/30">
                             {isDailyLimitReached ? 'LIMIT' : 'UNLOCK'}
                         </button>
                         <span className="text-[7px] font-black text-gray-600 uppercase tracking-tighter">Daily: {dailyCount}/5</span>
                     </div>
                 </div>
+                {isExpanded && (
+                    <div className="mt-3 border-t border-white/10 pt-3 space-y-2">
+                        <p className="font-orbitron text-[8px] text-cyan-300 uppercase tracking-widest">{connectedSkills.length} linked skills</p>
+                        {connectedSkills.length > 0 ? connectedSkills.map(child => (
+                            <div key={child.id} className="border-l-2 border-cyan-400/50 bg-blue-500/5 px-2 py-1.5">
+                                <p className="font-orbitron text-[9px] text-gray-200 uppercase truncate">[{child.grade}] {child.name}</p>
+                            </div>
+                        )) : <p className="text-[9px] text-gray-500 uppercase tracking-widest">No dependent skills.</p>}
+                    </div>
+                )}
                  {tooltipVisible && <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-black/90 text-white text-[10px] rounded p-2 z-30 whitespace-pre-wrap text-center border border-blue-500/30 backdrop-blur-sm">{prereqDetails}</div>}
             </div>
         );
@@ -148,7 +161,7 @@ const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPre
     };
 
     return (
-        <div ref={nodeRef} data-skill-id={skill.id} onMouseEnter={() => !isPrereqsMet && setTooltipVisible(true)} onMouseLeave={() => setTooltipVisible(false)} className={`glass-panel group relative p-3 rounded-lg border w-64 flex-shrink-0 ${styles.bg} transition-all duration-300 ${!isPrereqsMet ? 'opacity-40 grayscale-[0.3]' : ''} ${nodeClasses()} ${pulseAnimationClass}`}>
+        <div ref={nodeRef} data-skill-id={skill.id} onClick={onToggle} onMouseEnter={() => !isPrereqsMet && setTooltipVisible(true)} onMouseLeave={() => setTooltipVisible(false)} className={`glass-panel group relative p-3 rounded-lg border w-64 flex-shrink-0 cursor-pointer ${styles.bg} transition-all duration-300 ${!isPrereqsMet ? 'opacity-40 grayscale-[0.3]' : ''} ${nodeClasses()} ${pulseAnimationClass}`}>
             <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
                 {!isPrereqsMet && <div className="text-gray-400"><InfoIcon /></div>}
                 <button onClick={(e) => { e.stopPropagation(); onDelete(skill.id); }} className="p-1 rounded-full bg-gray-900/40 text-gray-500 hover:bg-red-800/60 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -169,12 +182,22 @@ const SkillNode: React.FC<SkillNodeProps> = ({ skill, onImprove, onDelete, isPre
                   </div>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                    <button onClick={() => onImprove(skill.id)} disabled={isDisabled} className={`font-orbitron text-white px-2 py-1 rounded-sm text-[9px] font-bold tracking-widest transition-all duration-300 shadow-md focus:outline-none w-16 text-center border ${isFullyMastered ? 'bg-red-900 border-red-500 opacity-80 cursor-not-allowed' : (isReadyForPromotion || isReadyForAscension) ? 'bg-yellow-600 border-yellow-400' : 'bg-blue-600/80 border-blue-400/50'} enabled:hover:scale-105 disabled:bg-gray-800 disabled:opacity-50`}>
+                    <button onClick={(e) => { e.stopPropagation(); onImprove(skill.id); }} disabled={isDisabled} className={`font-orbitron text-white px-2 py-1 rounded-sm text-[9px] font-bold tracking-widest transition-all duration-300 shadow-md focus:outline-none w-16 text-center border ${isFullyMastered ? 'bg-red-900 border-red-500 opacity-80 cursor-not-allowed' : (isReadyForPromotion || isReadyForAscension) ? 'bg-yellow-600 border-yellow-400' : 'bg-blue-600/80 border-blue-400/50'} enabled:hover:scale-105 disabled:bg-gray-800 disabled:opacity-50`}>
                         {isFullyMastered ? 'MAX' : isDailyLimitReached ? 'LIMIT' : isReadyForPromotion ? 'PROMOTE' : isReadyForAscension ? 'ASCEND' : 'TRAIN'}
                     </button>
                     <span className="text-[7px] font-black text-gray-600 uppercase tracking-tighter">Daily: {dailyCount}/5</span>
                 </div>
             </div>
+            {isExpanded && (
+                <div className="mt-3 border-t border-white/10 pt-3 space-y-2">
+                    <p className="font-orbitron text-[8px] text-cyan-300 uppercase tracking-widest">{connectedSkills.length} linked skills</p>
+                    {connectedSkills.length > 0 ? connectedSkills.map(child => (
+                        <div key={child.id} className="border-l-2 border-cyan-400/50 bg-blue-500/5 px-2 py-1.5">
+                            <p className="font-orbitron text-[9px] text-gray-200 uppercase truncate">[{child.grade}] {child.name}</p>
+                        </div>
+                    )) : <p className="text-[9px] text-gray-500 uppercase tracking-widest">No dependent skills.</p>}
+                </div>
+            )}
             {tooltipVisible && <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-black/95 text-white text-[10px] rounded p-2 z-30 border border-blue-500/40 backdrop-blur-md">{prereqDetails}</div>}
         </div>
     );
@@ -189,6 +212,7 @@ interface SkillTreeProps {
 export const SkillTree: React.FC<SkillTreeProps> = ({ skills, onImprove, onDelete }) => {
     const treeContainerRef = useRef<HTMLDivElement>(null);
     const [lines, setLines] = useState<React.ReactNode[]>([]);
+    const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
 
     const { tree, skillMap } = useMemo<{ tree: Skill[][]; skillMap: Map<string, Skill> }>(() => {
         const skillMap = new Map<string, Skill>(skills.map(s => [s.id, s]));
@@ -285,8 +309,21 @@ export const SkillTree: React.FC<SkillTreeProps> = ({ skills, onImprove, onDelet
                             const parentTotalStars = (parentSkill.masteryLevel || 0) * 5 + parentSkill.stars;
                             return parentTotalStars >= p.requiredStars;
                         }) ?? true;
-                        const prereqDetails = skill.prerequisites?.map(p => `• Requires "${skillMap.get(p.skillId)?.name}" at ${p.requiredStars}★`).join('\n') || '';
-                        return <SkillNode key={skill.id} skill={skill} onImprove={onImprove} onDelete={onDelete} isPrereqsMet={isPrereqsMet} prereqDetails={prereqDetails} />;
+                        const prereqDetails = skill.prerequisites?.map(p => `Requires "${skillMap.get(p.skillId)?.name}" at ${p.requiredStars} stars`).join('\n') || '';
+                        const connectedSkills = skills.filter(item => item.prerequisites?.some(p => p.skillId === skill.id));
+                        return (
+                            <SkillNode
+                                key={skill.id}
+                                skill={skill}
+                                onImprove={onImprove}
+                                onDelete={onDelete}
+                                isPrereqsMet={isPrereqsMet}
+                                prereqDetails={prereqDetails}
+                                connectedSkills={connectedSkills}
+                                isExpanded={expandedSkillId === skill.id}
+                                onToggle={() => setExpandedSkillId(expandedSkillId === skill.id ? null : skill.id)}
+                            />
+                        );
                     })}
                 </div>
             ))}

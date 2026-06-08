@@ -1204,7 +1204,12 @@ export const usePlayerData = () => {
         }, 
         clearEvents, addEvent, importState, exportState, addSkill, 
         deleteSkill: (id: string) => { setState(s => ({ ...s, skills: s.skills.filter(sk => sk.id !== id) })); addNotification('SKILL ERASED', 'Purged from database.', 'warning'); }, 
-        addSkillFolder: (name: string, category: string, icon: string) => { setState(s => ({ ...s, skillFolders: [...s.skillFolders, { id: `sf-${Date.now()}`, name, category, icon }] })); addNotification('FOLDER INITIALIZED', `Organisation unit "${name}" established.`, 'info'); }, 
+        addSkillFolder: (name: string, category: string, icon: string) => {
+            const id = `sf-${Date.now()}`;
+            setState(s => ({ ...s, skillFolders: [...s.skillFolders, { id, name, category, icon }] }));
+            addNotification('FOLDER INITIALIZED', `Organisation unit "${name}" established.`, 'info');
+            return id;
+        }, 
         deleteSkillFolder: (id: string) => { setState(s => ({ ...s, skillFolders: s.skillFolders.filter(f => f.id !== id) })); addNotification('FOLDER DELETED', 'Removed.', 'warning'); }, 
         addCategory: (name: string, icon: string) => { setState(s => ({ ...s, categories: [...s.categories, { name, icon }] })); addNotification('CATEGORY ESTABLISHED', `Classification "${name}" logged.`, 'info'); }, 
         deleteCategory: (name: string) => { setState(s => ({ ...s, categories: s.categories.filter(c => c.name !== name) })); addNotification('CATEGORY REMOVED', 'Purged.', 'warning'); }, 

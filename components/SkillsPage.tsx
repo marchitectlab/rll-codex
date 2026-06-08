@@ -10,7 +10,7 @@ interface SkillsPageProps {
   categories: SkillCategory[];
   improveSkill: (skillId: string) => void;
   addSkill: (name: string, grade: Difficulty, stars: number, status: 'locked' | 'unlocked', category: string, description: string, guide: string, prerequisites: SkillPrerequisite[], folderId?: string) => void;
-  addSkillFolder: (name: string, category: string, icon: string) => void;
+  addSkillFolder: (name: string, category: string, icon: string) => string;
   addCategory: (name: string, icon: string) => void;
   onDeleteSkill: (skillId: string) => void;
   onDeleteSkillFolder: (folderId: string) => void;
@@ -83,6 +83,49 @@ const EmptyState: React.FC<{ title: string; message: string }> = ({ title, messa
   </div>
 );
 
+const SkillCard: React.FC<{
+  skill: Skill;
+  connectedSkills: Skill[];
+  isExpanded: boolean;
+  onToggle: () => void;
+  onImprove: (skillId: string) => void;
+  onDelete: (skillId: string) => void;
+}> = ({ skill, connectedSkills, isExpanded, onToggle, onImprove, onDelete }) => (
+  <div className="border border-blue-500/15 bg-black/30 rounded overflow-hidden">
+    <button onClick={onToggle} className="w-full text-left px-3 py-3 flex items-center justify-between gap-3 hover:bg-blue-500/10 transition-colors">
+      <div className="min-w-0">
+        <p className="font-orbitron text-[10px] text-gray-300 uppercase truncate">[{skill.grade}] {skill.name}</p>
+        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">{skill.stars} stars | {connectedSkills.length} linked</p>
+      </div>
+      <span className="font-orbitron text-[10px] text-cyan-300 shrink-0">{isExpanded ? 'CLOSE' : 'OPEN'}</span>
+    </button>
+    {isExpanded && (
+      <div className="border-t border-white/10 bg-slate-950/60 px-3 py-3 space-y-3">
+        <div className="flex items-center gap-2">
+          <button onClick={() => onImprove(skill.id)} className="font-orbitron bg-blue-700/80 hover:bg-blue-600 text-white px-3 py-2 rounded text-[9px] font-black uppercase tracking-widest border border-blue-400/30">
+            Train
+          </button>
+          <button onClick={() => onDelete(skill.id)} className="font-orbitron bg-red-900/50 hover:bg-red-800 text-red-100 px-3 py-2 rounded text-[9px] font-black uppercase tracking-widest border border-red-500/30">
+            Delete
+          </button>
+        </div>
+        {connectedSkills.length > 0 ? (
+          <div className="space-y-2">
+            {connectedSkills.map(child => (
+              <div key={child.id} className="border-l-2 border-cyan-400/40 bg-blue-500/5 px-3 py-2">
+                <p className="font-orbitron text-[10px] text-cyan-100 uppercase truncate">[{child.grade}] {child.name}</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest">Requires this skill</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest">No dependent skills linked yet.</p>
+        )}
+      </div>
+    )}
+  </div>
+);
+
 export const SkillsPage: React.FC<SkillsPageProps> = ({
   skills,
   skillFolders,
@@ -102,6 +145,7 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({
   const [newFolderIcon, setNewFolderIcon] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryIcon, setNewCategoryIcon] = useState('');
+  const [expandedSkillId, setExpandedSkillId] = useState<string | null>(null);
 
   const skillStats = useMemo(() => ({
     categories: categories.length,
@@ -135,12 +179,37 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({
     setNewCategoryIcon('');
   };
 
+  const getConnectedSkills = (skillId: string) => (
+    skills.filter(skill => skill.prerequisites?.some(prereq => prereq.skillId === skillId))
+  );
+
+  const renderSkillCards = (items: Skill[]) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+      {items.map(skill => {
+        const connectedSkills = getConnectedSkills(skill.id);
+        return (
+          <SkillCard
+            key={skill.id}
+            skill={skill}
+            connectedSkills={connectedSkills}
+            isExpanded={expandedSkillId === skill.id}
+            onToggle={() => setExpandedSkillId(expandedSkillId === skill.id ? null : skill.id)}
+            onImprove={improveSkill}
+            onDelete={onDeleteSkill}
+          />
+        );
+      })}
+    </div>
+  );
+
   const renderContent = () => {
     if (view === 'add') {
       return (
         <div className="border border-blue-500/20 bg-[#020617] rounded p-4 md:p-6">
           <CreateSkillForm
             addSkill={(...args) => { addSkill(...args); navigate('categories'); }}
+            addSkillFolder={addSkillFolder}
+            addCategory={addCategory}
             skills={skills}
             skillFolders={skillFolders}
             categories={categories}
@@ -207,14 +276,7 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({
             {unassignedSkills.length > 0 && (
               <section>
                 <SectionHeader eyebrow="Loose Entries" title="Unassigned Skills" count={unassignedSkills.length} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {unassignedSkills.map(skill => (
-                    <div key={skill.id} className="border border-white/10 bg-black/25 rounded px-3 py-2 flex items-center justify-between gap-3">
-                      <span className="font-orbitron text-[10px] text-gray-300 uppercase tracking-widest truncate">[{skill.grade}] {skill.name}</span>
-                      <span className="text-[10px] text-yellow-300 shrink-0">{skill.stars} stars</span>
-                    </div>
-                  ))}
-                </div>
+                {renderSkillCards(unassignedSkills)}
               </section>
             )}
           </div>
@@ -239,38 +301,52 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({
 
     return (
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
-        <section>
-          <SectionHeader eyebrow="Library" title="Categories" count={categories.length} />
-          {categories.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {categories.map(category => {
-                const folderCount = skillFolders.filter(folder => folder.category === category.name).length;
-                const skillCount = skills.filter(skill => skill.category === category.name).length;
-                return (
-                  <div key={category.name} className="group relative">
-                    <button
-                      onClick={() => { setSelectedCategory(category.name); setView('folders'); }}
-                      className="w-full h-full text-left border border-blue-500/20 bg-black/35 hover:bg-blue-500/10 hover:border-blue-400/50 rounded p-4 transition-all"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-11 w-11 rounded border border-blue-500/20 bg-blue-500/5 flex items-center justify-center overflow-hidden shrink-0">
-                          {category.icon ? <img src={category.icon} alt={category.name} className="h-full w-full object-cover" /> : <DefaultIconPlaceholder />}
+        <div className="space-y-6">
+          <section>
+            <SectionHeader eyebrow="Library" title="Categories" count={categories.length} />
+            {categories.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {categories.map(category => {
+                  const folderCount = skillFolders.filter(folder => folder.category === category.name).length;
+                  const skillCount = skills.filter(skill => skill.category === category.name).length;
+                  return (
+                    <div key={category.name} className="group relative">
+                      <button
+                        onClick={() => { setSelectedCategory(category.name); setView('folders'); }}
+                        className="w-full h-full text-left border border-blue-500/20 bg-black/35 hover:bg-blue-500/10 hover:border-blue-400/50 rounded p-4 transition-all"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-11 w-11 rounded border border-blue-500/20 bg-blue-500/5 flex items-center justify-center overflow-hidden shrink-0">
+                            {category.icon ? <img src={category.icon} alt={category.name} className="h-full w-full object-cover" /> : <DefaultIconPlaceholder />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-orbitron text-sm text-white uppercase tracking-widest truncate">{category.name}</p>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">{folderCount} folders | {skillCount} skills</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-orbitron text-sm text-white uppercase tracking-widest truncate">{category.name}</p>
-                          <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">{folderCount} folders | {skillCount} skills</p>
-                        </div>
-                      </div>
-                    </button>
-                    <DeleteButton label={`Delete category ${category.name}`} onClick={(e) => { e.stopPropagation(); onDeleteCategory(category.name); }} />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState title="No categories" message="Create your first category to begin mapping skills." />
-          )}
-        </section>
+                      </button>
+                      <DeleteButton label={`Delete category ${category.name}`} onClick={(e) => { e.stopPropagation(); onDeleteCategory(category.name); }} />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState title="No categories" message="Create your first category to begin mapping skills." />
+            )}
+          </section>
+
+          <section>
+            {(() => {
+              const directSkills = skills.filter(skill => !skill.category && !skill.folderId);
+              return (
+                <>
+                  <SectionHeader eyebrow="Main Page" title="Direct Skills" count={directSkills.length} />
+                  {directSkills.length > 0 ? renderSkillCards(directSkills) : <EmptyState title="No direct skills" message="Skills without category or folder will appear here." />}
+                </>
+              );
+            })()}
+          </section>
+        </div>
 
         <form onSubmit={handleAddCategory} className="border border-blue-500/20 bg-[#020617] rounded p-4 space-y-4 h-fit">
           <SectionHeader eyebrow="Classify" title="New Category" />

@@ -3,6 +3,8 @@ import { Difficulty, Skill, SkillPrerequisite, SkillFolder, SkillCategory } from
 
 interface CreateSkillFormProps {
   addSkill: (name: string, grade: Difficulty, stars: number, status: 'locked' | 'unlocked', category: string, description: string, guide: string, prerequisites: SkillPrerequisite[], folderId?: string) => void;
+  addSkillFolder: (name: string, category: string, icon: string) => string;
+  addCategory: (name: string, icon: string) => void;
   skills: Skill[];
   skillFolders: SkillFolder[];
   categories: SkillCategory[];
@@ -39,9 +41,10 @@ const FieldLabel: React.FC<{ children: React.ReactNode; optional?: boolean }> = 
 const fieldClass = 'w-full bg-black/40 border border-blue-500/20 rounded px-4 py-3 text-sm text-white outline-none focus:border-blue-400 transition-all';
 const selectClass = `${fieldClass} font-orbitron text-xs`;
 
-const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, skillFolders, categories }) => {
+const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, addSkillFolder, addCategory, skills, skillFolders, categories }) => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
   const [grade, setGrade] = useState<Difficulty>(Difficulty.E);
   const [status, setStatus] = useState<'unlocked' | 'locked'>('unlocked');
   const [description, setDescription] = useState('');
@@ -61,11 +64,14 @@ const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, ski
     return skillFolders.filter(folder => folder.category.toLowerCase() === category.trim().toLowerCase());
   }, [category, skillFolders]);
 
-  const isFormInvalid = !name.trim() || !category.trim() || !folderId;
+  const normalizedCategory = category.trim();
+  const isNewCategory = normalizedCategory.length > 0 && !categories.some(cat => cat.name.toLowerCase() === normalizedCategory.toLowerCase());
+  const isFormInvalid = !name.trim();
 
   const resetForm = () => {
     setName('');
     setCategory('');
+    setNewFolderName('');
     setGrade(Difficulty.E);
     setStatus('unlocked');
     setDescription('');
@@ -79,7 +85,16 @@ const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, ski
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isFormInvalid) return;
-    addSkill(name.trim(), grade, 0, status, category.trim(), description.trim(), guide.trim(), prerequisites, folderId);
+
+    let resolvedFolderId = folderId || undefined;
+    if (normalizedCategory && isNewCategory) {
+      addCategory(normalizedCategory, '');
+    }
+    if (normalizedCategory && newFolderName.trim()) {
+      resolvedFolderId = addSkillFolder(newFolderName.trim(), normalizedCategory, '');
+    }
+
+    addSkill(name.trim(), grade, 0, status, normalizedCategory, description.trim(), guide.trim(), prerequisites, resolvedFolderId);
     resetForm();
   };
 
@@ -107,7 +122,7 @@ const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, ski
           <input
             value={category}
             onChange={e => { setCategory(e.target.value); setFolderId(''); }}
-            placeholder="Physical, Mental, Creative..."
+            placeholder="Optional classification"
             className={fieldClass}
             list="category-suggestions"
           />
@@ -116,11 +131,21 @@ const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, ski
           </datalist>
         </div>
         <div>
-          <FieldLabel>Folder</FieldLabel>
-          <select value={folderId} onChange={e => setFolderId(e.target.value)} disabled={!category.trim() || availableFolders.length === 0} className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
-            <option value="">Select folder</option>
+          <FieldLabel optional>Existing Folder</FieldLabel>
+          <select value={folderId} onChange={e => { setFolderId(e.target.value); if (e.target.value) setNewFolderName(''); }} disabled={!category.trim() || availableFolders.length === 0 || !!newFolderName.trim()} className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
+            <option value="">Main category page</option>
             {availableFolders.map(folder => <option key={folder.id} value={folder.id}>{folder.name}</option>)}
           </select>
+        </div>
+        <div>
+          <FieldLabel optional>New Folder</FieldLabel>
+          <input
+            value={newFolderName}
+            onChange={e => { setNewFolderName(e.target.value); if (e.target.value.trim()) setFolderId(''); }}
+            disabled={!category.trim()}
+            placeholder="Create while saving"
+            className={`${fieldClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+          />
         </div>
         <div>
           <FieldLabel>Grade</FieldLabel>
@@ -194,7 +219,7 @@ const CreateSkillForm: React.FC<CreateSkillFormProps> = ({ addSkill, skills, ski
         <button disabled={isFormInvalid} type="submit" className="font-orbitron bg-blue-700 text-white px-6 py-3 rounded uppercase text-[10px] font-black tracking-widest border border-blue-400/40 transition-all enabled:hover:bg-blue-600 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed">
           Add Skill
         </button>
-        {isFormInvalid && <p className="text-[10px] text-gray-500 uppercase tracking-widest">Skill name, category, and folder are required.</p>}
+        {isFormInvalid && <p className="text-[10px] text-gray-500 uppercase tracking-widest">Skill name is required.</p>}
       </div>
     </form>
   );
