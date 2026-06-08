@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { DistanceRunResult, Quest } from '../types';
 import { calculateDistanceQuestResult, formatDistance, formatDuration, formatPace } from '../lib/distanceQuest';
 
@@ -45,47 +47,109 @@ const StatBlock: React.FC<{ label: string; value: string; tone?: string }> = ({ 
   </div>
 );
 
-const RouteMap: React.FC<{ points: RunPoint[]; distanceMeters: number }> = ({ points, distanceMeters }) => {
-  const path = useMemo(() => {
-    if (points.length < 2) return '';
-    const minLat = Math.min(...points.map(p => p.latitude));
-    const maxLat = Math.max(...points.map(p => p.latitude));
-    const minLng = Math.min(...points.map(p => p.longitude));
-    const maxLng = Math.max(...points.map(p => p.longitude));
-    const latRange = Math.max(0.00001, maxLat - minLat);
-    const lngRange = Math.max(0.00001, maxLng - minLng);
+const buildMarkerIcon = (color: string, label: string) => L.divIcon({
+  className: 'rll-run-marker',
+  html: `<div style="width:22px;height:22px;border-radius:9999px;background:${color};border:3px solid white;box-shadow:0 0 16px ${color};display:flex;align-items:center;justify-content:center;color:#020617;font-size:9px;font-weight:900;font-family:Arial,sans-serif;">${label}</div>`,
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
 
-    return points.map(p => {
-      const x = 8 + ((p.longitude - minLng) / lngRange) * 84;
-      const y = 92 - ((p.latitude - minLat) / latRange) * 84;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(' ');
+const startIcon = buildMarkerIcon('#22c55e', 'S');
+const currentIcon = buildMarkerIcon('#38bdf8', '');
+
+const RouteMap: React.FC<{ points: RunPoint[]; distanceMeters: number; gpsStatus: string }> = ({ points, distanceMeters, gpsStatus }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const routeRef = useRef<L.Polyline | null>(null);
+  const startMarkerRef = useRef<L.Marker | null>(null);
+  const currentMarkerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+      attributionControl: false,
+      preferCanvas: true,
+    }).setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      crossOrigin: true,
+    }).addTo(map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.control.attribution({ position: 'bottomleft', prefix: false }).addAttribution('&copy; OpenStreetMap').addTo(map);
+
+    routeRef.current = L.polyline([], {
+      color: '#22d3ee',
+      weight: 5,
+      opacity: 0.95,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      routeRef.current = null;
+      startMarkerRef.current = null;
+      currentMarkerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const route = routeRef.current;
+    if (!map || !route) return;
+
+    const latLngs = points.map(p => L.latLng(p.latitude, p.longitude));
+    route.setLatLngs(latLngs);
+
+    if (latLngs.length === 0) {
+      map.setView([20, 0], 2);
+      return;
+    }
+
+    const first = latLngs[0];
+    const last = latLngs[latLngs.length - 1];
+
+    if (!startMarkerRef.current) {
+      startMarkerRef.current = L.marker(first, { icon: startIcon, keyboard: false }).addTo(map);
+    } else {
+      startMarkerRef.current.setLatLng(first);
+    }
+
+    if (!currentMarkerRef.current) {
+      currentMarkerRef.current = L.marker(last, { icon: currentIcon, keyboard: false }).addTo(map);
+    } else {
+      currentMarkerRef.current.setLatLng(last);
+    }
+
+    if (latLngs.length === 1) {
+      map.setView(last, 17, { animate: true });
+    } else {
+      const bounds = L.latLngBounds(latLngs);
+      map.fitBounds(bounds.pad(0.25), { maxZoom: 17, animate: true });
+    }
   }, [points]);
 
   return (
-    <div className="border border-blue-500/20 bg-black/40 rounded p-3">
+    <div className="border border-blue-500/20 bg-black/40 rounded p-3 overflow-hidden">
       <div className="flex items-center justify-between mb-2">
-        <p className="font-orbitron text-[8px] text-blue-300/60 uppercase tracking-[0.25em]">Route Map</p>
+        <p className="font-orbitron text-[8px] text-blue-300/60 uppercase tracking-[0.25em]">Live Route Map</p>
         <p className="font-orbitron text-[8px] text-cyan-300 uppercase tracking-widest">{formatDistance(distanceMeters)}</p>
       </div>
-      <svg viewBox="0 0 100 100" className="w-full h-44 md:h-56 bg-slate-950/70 border border-white/5 rounded">
-        <defs>
-          <pattern id="route-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(56,189,248,0.12)" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#route-grid)" />
-        {path ? (
-          <>
-            <polyline points={path} fill="none" stroke="rgba(34,211,238,0.35)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-            <polyline points={path} fill="none" stroke="#67e8f9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx={path.split(' ')[0].split(',')[0]} cy={path.split(' ')[0].split(',')[1]} r="2.6" fill="#22c55e" />
-            <circle cx={path.split(' ').at(-1)?.split(',')[0]} cy={path.split(' ').at(-1)?.split(',')[1]} r="2.6" fill="#f87171" />
-          </>
-        ) : (
-          <text x="50" y="52" textAnchor="middle" className="fill-slate-500 text-[5px] font-bold uppercase tracking-widest">Waiting for stable GPS movement</text>
+      <div className="relative">
+        <div ref={containerRef} className="w-full h-64 md:h-80 rounded border border-white/5 bg-slate-950" />
+        {points.length === 0 && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-slate-950/55 rounded">
+            <p className="font-orbitron text-[10px] text-slate-300 uppercase tracking-[0.2em] text-center px-4">{gpsStatus}</p>
+          </div>
         )}
-      </svg>
+      </div>
     </div>
   );
 };
@@ -259,7 +323,7 @@ export const DistanceRunPage: React.FC<DistanceRunPageProps> = ({ quest, onCance
         </section>
 
         <div className="mb-5">
-          <RouteMap points={routePoints} distanceMeters={distanceMeters} />
+          <RouteMap points={routePoints} distanceMeters={distanceMeters} gpsStatus={gpsStatus} />
         </div>
 
         <div className="flex-1 border border-white/10 bg-black/30 rounded p-4 md:p-6 mb-5">
