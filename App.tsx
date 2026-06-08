@@ -21,6 +21,7 @@ import { ReportExport } from './components/ReportExport';
 import { TaskList } from './components/TaskList';
 import { WorkshopPage } from './components/WorkshopPage';
 import { SettingsPage } from './components/SettingsPage';
+import { OnboardingPage } from './components/OnboardingPage';
 import { supabase } from './lib/supabase';
 import { schedulePlannerReminder, scheduleQuestReminder } from './lib/notifications';
 
@@ -806,6 +807,7 @@ const InventoryPageWrapper: React.FC<{ inventory: Inventory; player: Player; onE
 
 const RATE_EVERY_N_LEVELS = 3; // show rate prompt every 3 level-ups
 const RATE_STORAGE_KEY = 'rll_levelups_since_rate';
+const ONBOARDING_STORAGE_KEY = 'rll_onboarding_complete_v1';
 
 interface AppProps {
   userEmail?: string;
@@ -823,6 +825,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
     const data = usePlayerData();
     const { isPro, purchasing, offeringsLoading, offeringsError, offeringsErrorMsg, monthlyPlan, lifetimePlan, purchasePlan, restoreProPurchases, retryOfferings, refreshProStatus } = usePro(userId);
     const [page, setPage] = useState<Page | 'startup'>('startup');
+    const [showOnboarding, setShowOnboarding] = useState(() => localStorage.getItem(ONBOARDING_STORAGE_KEY) !== 'true');
     const handleSignOut = useCallback(async () => {
         await onSignOut();
     }, [onSignOut]);
@@ -974,6 +977,15 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
         setPage(newPage);
     }, [maybeShowPromo, isPro]);
 
+    const completeOnboarding = useCallback(() => {
+        localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+        setShowOnboarding(false);
+        setPage('quests');
+        setTimeout(() => {
+            data.addNotification('WELCOME HUNTER', 'Start with one E-rank quest today. Clear it, then build your first custom skill.', 'achievement');
+        }, 250);
+    }, [data]);
+
     // Clear dungeon — skip interstitial if Pro
     const handleClearDungeon = useCallback(async () => {
         if (!isPro) await showInterstitialAd();
@@ -1070,6 +1082,10 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             default: return null;
         }
     };
+
+    if (showOnboarding) {
+        return <OnboardingPage onComplete={completeOnboarding} />;
+    }
 
     if (page === 'startup') {
         return (

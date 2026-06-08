@@ -1202,7 +1202,7 @@ export const usePlayerData = () => {
                 return { ...s, inventory: newInventory };
             });
         }, 
-        clearEvents, addEvent, importState, exportState, addSkill, 
+        clearEvents, addEvent, importState, exportState, addNotification, addSkill, 
         deleteSkill: (id: string) => { setState(s => ({ ...s, skills: s.skills.filter(sk => sk.id !== id) })); addNotification('SKILL ERASED', 'Purged from database.', 'warning'); }, 
         addSkillFolder: (name: string, category: string, icon: string) => {
             const id = `sf-${Date.now()}`;
