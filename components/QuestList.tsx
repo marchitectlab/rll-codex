@@ -86,13 +86,13 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onStar
       <div className="flex border-b border-blue-500/30 mb-4">
         <button
             onClick={() => setActiveTab('system')}
-            className={`font-orbitron text-lg px-6 py-2 transition-colors duration-300 border-b-2 ${activeTab === 'system' ? 'text-blue-300 border-blue-400' : 'text-gray-500 border-transparent hover:text-white'}`}
+            className={`font-orbitron text-base px-5 py-2 transition-colors duration-300 border-b-2 ${activeTab === 'system' ? 'text-blue-300 border-blue-400' : 'text-gray-500 border-transparent hover:text-white'}`}
         >
             System Quests
         </button>
         <button
             onClick={() => setActiveTab('custom')}
-            className={`font-orbitron text-lg px-6 py-2 transition-colors duration-300 border-b-2 ${activeTab === 'custom' ? 'text-blue-300 border-blue-400' : 'text-gray-500 border-transparent hover:text-white'}`}
+            className={`font-orbitron text-base px-5 py-2 transition-colors duration-300 border-b-2 ${activeTab === 'custom' ? 'text-blue-300 border-blue-400' : 'text-gray-500 border-transparent hover:text-white'}`}
         >
             Custom Quests
         </button>
@@ -101,7 +101,7 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onStar
       <div className="mb-6">
         <button 
             onClick={() => setIsFiltersExpanded(!isFiltersExpanded)} 
-            className="flex items-center gap-2 text-[10px] font-black font-orbitron text-blue-500 uppercase tracking-[0.2em] mb-4 hover:text-blue-300 transition-colors"
+            className="flex items-center gap-2 text-[10px] font-bold font-orbitron text-blue-500 uppercase tracking-normal mb-4 hover:text-blue-300 transition-colors"
         >
             <svg className={`w-4 h-4 transition-transform duration-300 ${isFiltersExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
             {isFiltersExpanded ? 'Close Protocols' : 'Filter & Sort Protocols'}
@@ -110,7 +110,7 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onStar
         {isFiltersExpanded && (
             <div className="flex flex-col gap-4 animate-fadeIn border-l-2 border-blue-500/20 pl-4 mb-4">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mr-2">Difficulty Rank:</span>
+                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-normal mr-2">Difficulty Rank:</span>
                     {(['all', ...Object.values(Difficulty)] as const).map(option => {
                         const isActive = difficultyFilter === option;
                         if (option === 'all') return <button key={option} onClick={() => setDifficultyFilter('all')} className={`font-orbitron px-3 py-1 text-[10px] rounded-sm border transition-all ${isActive ? 'bg-blue-600 border-blue-400 text-white' : 'border-slate-800 text-gray-500 hover:border-blue-500/40'}`}>All</button>
@@ -119,21 +119,21 @@ export const QuestList: React.FC<QuestListProps> = ({ quests, onComplete, onStar
                     })}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mr-2">Quest Type:</span>
+                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-normal mr-2">Quest Type:</span>
                     {typeFilterOptions.map(option => {
                         const isActive = typeFilter === option;
                         return <button key={option} onClick={() => setTypeFilter(option as any)} className={`font-orbitron px-3 py-1 text-[10px] rounded-sm border transition-all capitalize ${isActive ? 'bg-blue-600 border-blue-400 text-white' : 'border-slate-800 text-gray-500 hover:border-blue-500/40'}`}>{option}</button>
                     })}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mr-2">Attribute Focus:</span>
+                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-normal mr-2">Attribute Focus:</span>
                     {(['all', ...ATTRIBUTES] as const).map(option => {
                         const isActive = attributeFilter === option;
                         return <button key={option} onClick={() => setAttributeFilter(option)} className={`font-orbitron px-3 py-1 text-[10px] rounded-sm border transition-all capitalize ${isActive ? 'bg-blue-600 border-blue-400 text-white' : 'border-slate-800 text-gray-500 hover:border-blue-500/40'}`}>{option}</button>
                     })}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mr-2">Ordering Logic:</span>
+                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-normal mr-2">Ordering Logic:</span>
                     {(['difficulty', 'name'] as const).map(key => {
                         const isActive = sortConfig.key === key;
                         return <button key={key} onClick={() => handleSort(key)} className={`flex items-center font-orbitron px-3 py-1 text-[10px] rounded-sm border transition-all capitalize ${isActive ? 'bg-blue-600 border-blue-400 text-white' : 'border-slate-800 text-gray-500 hover:border-blue-500/40'}`}>{key}{isActive && <SortIcon direction={sortConfig.direction} />}</button>

@@ -60,8 +60,6 @@ export const MATERIALS = {
     IRON: 'mat_iron',
     ALUMINIUM: 'mat_aluminium',
     FANG: 'mat_beast_fang',
-    RUBY: 'mat_ruby',
-    SAPPHIRE: 'mat_sapphire',
     DIAMOND: 'mat_diamond',
     SHARD: 'mat_brilliant_shard',
     BLOODSTONE: 'mat_bloodstone'
@@ -132,163 +130,146 @@ export const DUNGEONS: Dungeon[] = [
         name: 'Sands of Shadow', 
         grade: Difficulty.E, 
         description: 'Escaping the scorching shadow desert.', 
-        floors: [{
-            id: 'f1', name: 'Desert Entrance', 
-            tasks: [{ id: 't1', description: 'Drink 2 glasses of water', page: { title: 'Hydrate', narrative: 'The sun burns...' }}]
-        }],
-        rewards: { xp: 7 },
-        failurePenalty: { xp: 5 }
+        previewImage: '/dungeons/dungeon_e_01.png',
+        backgroundImage: '/dungeons/dungeon_e_01.png',
+        openingImage: '/dungeons/dungeon_e_01.png',
+        floors: [
+            {
+                id: 'f1',
+                name: 'Desert Entrance',
+                backgroundImage: '/dungeons/dungeon_e_01.png',
+                openingImage: '/dungeons/dungeon_e_01.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Walk 180m through the scorching sand',
+                    tracking: { mode: 'distance', distanceMeters: 180, autoComplete: true },
+                    attribute: Attribute.Endurance,
+                    page: { title: 'Cross the Sand', narrative: 'The sun burns...' }
+                }]
+            },
+            {
+                id: 'f2',
+                name: 'Dry Oasis',
+                backgroundImage: '/dungeons/dungeon_e_01_floor2.png',
+                openingImage: '/dungeons/dungeon_e_01_floor2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Drink 2 glasses of water',
+                    attribute: Attribute.Endurance,
+                    page: { title: 'Hydrate', narrative: 'Your throat is dry, but the gate still watches.' }
+                }]
+            }
+        ],
+        rewards: { xp: 5 },
+        failurePenalty: { xp: 3 }
     },
     { 
         id: 'dungeon_e_02', 
         name: 'Dark Room', 
         grade: Difficulty.E, 
         description: 'Entering the dungeon telports you into a pitch black room, find a light to exit the dungeon.', 
+        previewImage: '/dungeons/dungeon_e_02.png',
+        backgroundImage: '/dungeons/dungeon_e_02.png',
+        openingImage: '/dungeons/dungeon_e_02.png',
         floors: [{
             id: 'f1', name: 'Dark room', 
-            tasks: [{ id: 't1', description: '20/20/20 eye rule', page: { title: 'Eye Strain relief', narrative: 'cannot see...' }}]
+            backgroundImage: '/dungeons/dungeon_e_02.png',
+            openingImage: '/dungeons/dungeon_e_02.png',
+            tasks: [{
+                id: 't1',
+                description: 'Complete 5 push-ups in search of light',
+                attribute: Attribute.Strength,
+                page: { title: 'Search for Light', narrative: 'Cannot see...' }
+            }]
         }],
-        rewards: { xp: 7 },
-        failurePenalty: { xp: 5 }
+        rewards: { xp: 4 },
+        failurePenalty: { xp: 2 }
     },
     // --- D-RANK ---
     { 
         id: 'dungeon_d_01', 
         name: 'Sniper Goblin\'s Perch', 
         grade: Difficulty.D, 
-        description: 'Evading projectiles from a high-perched goblin.', 
+        description: 'Evade arrows from a high-perched goblin and reach the exit.', 
+        previewImage: '/dungeons/dungeon_d_01.png',
+        backgroundImage: '/dungeons/dungeon_d_01.png',
+        openingImage: '/dungeons/dungeon_d_01.png',
         floors: [{
             id: 'f1', name: 'Goblin Tower',
-            tasks: [{ id: 't1', description: '25 Squats', page: { title: 'Dodge', narrative: 'Arrows fly...' }}]
+            backgroundImage: '/dungeons/dungeon_d_01.png',
+            openingImage: '/dungeons/dungeon_d_01.png',
+            tasks: [{ id: 't1', description: '25 Squats', attribute: Attribute.Strength, page: { title: 'Dodge', narrative: 'Arrows fly...' }}]
         }],
-        rewards: { xp: 15 },
-        failurePenalty: { xp: 10 }
+        rewards: { xp: 10 },
+        failurePenalty: { xp: 5 }
     },
     { 
         id: 'dungeon_d_02', 
-        name: 'The Scholar\'s Test', 
+        name: 'Ant wave', 
         grade: Difficulty.D, 
         type: 'standard', 
-        description: 'Knowledge is power. A passage from an ancient text is before you, but its meaning is obscured. Study it until its secrets are revealed.', 
+        description: 'Ants start crawling around your feet. Dodge their attacks.', 
+        previewImage: '/dungeons/dungeon_d_02.png',
+        backgroundImage: '/dungeons/dungeon_d_02.png',
+        openingImage: '/dungeons/dungeon_d_02.png',
         timeLimit: 1200, 
         floors: [{
-            id: 'f1', name: 'The Archive',
-            tasks: [{ id: 't1', description: 'Study a chosen subject for 30 minutes', attribute: Attribute.Intellect, page: { title: 'Task 1: Illumination', narrative: 'Focus your mind. The secrets of the universe are written for those with the discipline to read them.' }}]
+            id: 'f1', name: 'Ant Tunnel',
+            backgroundImage: '/dungeons/dungeon_d_02.png',
+            openingImage: '/dungeons/dungeon_d_02.png',
+            tasks: [{ id: 't1', description: 'Dodge the ant bites and find the exit', attribute: Attribute.Agility, page: { title: 'Task 1: Complete 40 High Knees', narrative: 'Those bites will sting, perhaps the dungeon ants are poisonous...' }}]
         }], 
         rewards: { xp: 15, coins: QUEST_COIN_REWARDS[Difficulty.D] }
     },
     { 
         id: 'dungeon_d_03', 
-        name: 'The Jester\'s Agility', 
+        name: 'Laser Trap', 
         grade: Difficulty.D, 
         type: 'standard', 
-        description: 'The court jester is more agile than any knight. Mimic his movements with high knees to improve your own nimbleness.', 
+        description: 'Survive the laser trap.', 
+        previewImage: '/dungeons/dungeon_d_03.png',
+        backgroundImage: '/dungeons/dungeon_d_03.png',
+        openingImage: '/dungeons/dungeon_d_03.png',
         timeLimit: 300, 
         floors: [{
-            id: 'f1', name: 'The Court',
-            tasks: [{ id: 't1', description: 'Perform 1 minute of high knees', attribute: Attribute.Agility, page: { title: 'Task 1: The Frantic Dance', narrative: 'Speed and stamina are your goals. Move your feet as if the ground itself is burning.' }}]
+            id: 'f1', name: 'The Laser Trap',
+            backgroundImage: '/dungeons/dungeon_d_03.png',
+            openingImage: '/dungeons/dungeon_d_03.png',
+            tasks: [{ id: 't1', description: 'The laser trap has been activated. Perform 1 set of 30 crunches', attribute: Attribute.Strength, page: { title: 'Task 1: Complete 30 Abdominal Crunches', narrative: 'With each crunch, you are hammering your core into a plate of armor.' }}]
         }], 
-        rewards: { xp: 12, coins: QUEST_COIN_REWARDS[Difficulty.D] }
+        rewards: { xp: 8, coins: QUEST_COIN_REWARDS[Difficulty.D] }
     },
     { 
         id: 'dungeon_d_04', 
-        name: 'Forging the Abs', 
+        name: 'The Staircase', 
         grade: Difficulty.D, 
         type: 'standard', 
-        description: 'A warrior\'s core must be as solid as their shield. Perform a set of crunches until you feel the burn of the forge.', 
+        description: 'You find yourself at the bottom of a seemingly endless staircase. Climb it to find the exit.', 
+        previewImage: '/dungeons/dungeon_d_04.png',
+        backgroundImage: '/dungeons/dungeon_d_04.png',
+        openingImage: '/dungeons/dungeon_d_04.png',
         timeLimit: 300, 
         floors: [{
-            id: 'f1', name: 'The Forge',
-            tasks: [{ id: 't1', description: 'Perform 1 set of 30 crunches', attribute: Attribute.Strength, page: { title: 'Task 1: The Abdominal Forge', narrative: 'With each crunch, you are hammering your core into a plate of armor.' }}]
+            id: 'f1', name: 'The Base',
+            backgroundImage: '/dungeons/dungeon_d_04.png',
+            openingImage: '/dungeons/dungeon_d_04.png',
+            tasks: [{ id: 't1', description: 'Climb up 3 floors to find the exit', attribute: Attribute.Strength, page: { title: 'Task 1: Climb Up Three Floors', narrative: 'When will it end...' }}]
         }], 
         rewards: { xp: 12, coins: QUEST_COIN_REWARDS[Difficulty.D] }
     },
     { 
         id: 'dungeon_d_05', 
-        name: 'The Message Runner', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'A vital message must be delivered to a nearby outpost. A short, brisk walk is required.', 
-        timeLimit: 1200, 
-        floors: [{
-            id: 'f1', name: 'The Trail',
-            tasks: [{ id: 't1', description: 'Walk for 15 minutes', attribute: Attribute.Endurance, page: { title: 'Task 1: The Courier', narrative: 'Move with purpose. Your swiftness ensures the message arrives in time.' }}]
-        }], 
-        rewards: { xp: 11, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_06', 
-        name: 'The Staircase', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'You find yourself at the bottom of a seemingly endless staircase. Climb it to build the power in your legs.', 
-        timeLimit: 300, 
-        floors: [{
-            id: 'f1', name: 'The Base',
-            tasks: [{ id: 't1', description: 'climb up 3 floors', attribute: Attribute.Strength, page: { title: 'Task 1: The Ascent', narrative: 'Each step is a victory. Each flight is a new level of strength. Ascend.' }}]
-        }], 
-        rewards: { xp: 12, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_07', 
-        name: 'Deciphering the Runes', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'An ancient tablet is covered in runes you don\'t understand. Spend time with a foreign language primer to begin your journey as a translator.', 
-        timeLimit: 900, 
-        floors: [{
-            id: 'f1', name: 'The Tablet',
-            tasks: [{ id: 't1', description: 'Practice a foreign language for 10 minutes', attribute: Attribute.Intellect, page: { title: 'Task 1: The Lost Tongue', narrative: 'New languages unlock new worlds. Begin to decipher the ancient words.' }}]
-        }], 
-        rewards: { xp: 11, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_08', 
-        name: 'The Griffin\'s Roost', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'To reach the griffin\'s roost, you must perform a series of powerful lunges up a steep incline.', 
-        timeLimit: 300, 
-        floors: [{
-            id: 'f1', name: 'The Incline',
-            tasks: [{ id: 't1', description: 'Perform 1 set of 20 lunges (10 per leg)', attribute: Attribute.Strength, page: { title: 'Task 1: The Climb', narrative: 'This climb requires strength and balance. Each lunge brings you closer to the peak.' }}]
-        }], 
-        rewards: { xp: 12, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_09', 
-        name: 'The Silent Oracle', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'The Silent Oracle speaks not in words, but in written passages. Read from a book of wisdom to gain insight.', 
-        timeLimit: 900, 
-        floors: [{
-            id: 'f1', name: 'The Sanctum',
-            tasks: [{ id: 't1', description: 'Read 5 pages of a non-fiction book', attribute: Attribute.Intellect, page: { title: 'Task 1: Gaining Insight', narrative: 'The wisdom of ages is yours to claim. Absorb the knowledge.' }}]
-        }], 
-        rewards: { xp: 8, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_10', 
-        name: 'The Golem\'s Push', 
-        grade: Difficulty.D, 
-        type: 'standard', 
-        description: 'A stone golem blocks your path. It won\'t budge. Perform powerful push-ups to build the strength to move it.', 
-        timeLimit: 300, 
-        floors: [{
-            id: 'f1', name: 'The Obstacle',
-            tasks: [{ id: 't1', description: 'Perform 1 set of 15 push-ups (on knees if needed)', attribute: Attribute.Strength, page: { title: 'Task 1: The Unmovable Object', narrative: 'Test your strength against an impassable foe. Become the irresistible force.' }}]
-        }], 
-        rewards: { xp: 12, coins: QUEST_COIN_REWARDS[Difficulty.D] }
-    },
-    { 
-        id: 'dungeon_d_11_rf', 
         name: 'Rock Fall', 
         grade: Difficulty.D, 
-        description: 'run 250m to escape the falling rocks.', 
+        description: 'Run 250m to escape the falling rocks.', 
+        previewImage: '/dungeons/dungeon_d_05.png',
+        backgroundImage: '/dungeons/dungeon_d_05.png',
+        openingImage: '/dungeons/dungeon_d_05.png',
         floors: [{
             id: 'f1', name: 'Rock Fall',
-            tasks: [{ id: 't1', description: '250m Run', page: { title: 'Dodge', narrative: 'Rocks fall...' }}]
+            backgroundImage: '/dungeons/dungeon_d_05.png',
+            openingImage: '/dungeons/dungeon_d_05.png',
+            tasks: [{ id: 't1', description: '250m Run', tracking: { mode: 'distance', distanceMeters: 250, autoComplete: true }, attribute: Attribute.Agility, page: { title: 'Dodge', narrative: 'Rocks fall...' }}]
         }],
         rewards: { xp: 12 },
         failurePenalty: { xp: 8 }
@@ -296,245 +277,282 @@ export const DUNGEONS: Dungeon[] = [
     // --- C-RANK ---
     { 
         id: 'dungeon_c_01', 
-        name: 'Residents of the Grave', 
+        name: 'Goblin Barracks', 
         grade: Difficulty.C, 
-        description: 'Kill the undead.', 
-        floors: [{
-            id: 'f1', name: 'Graveyard',
-            tasks: [{ id: 't1', description: 'Shadow box 3 mins', page: { title: 'First Wave', narrative: 'Bones rattle...' }}]
-        }],
-        rewards: { xp: 15 },
+        type: 'standard',
+        description: 'A small goblin barracks stands inside a dark dungeon corridor. Fight through the outer yard and break the goblin shield wall to reach the exit.', 
+        previewImage: '/dungeons/dungeon_c_01.png',
+        backgroundImage: '/dungeons/dungeon_c_01.png',
+        openingImage: '/dungeons/dungeon_c_01.png',
+        timeLimit: 500,
+        floors: [
+            {
+                id: 'f1', name: 'Outer Yard',
+                backgroundImage: '/dungeons/dungeon_c_01.png',
+                openingImage: '/dungeons/dungeon_c_01.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Perform 20 squats',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 1: Push Through the Yard', narrative: 'Goblin scouts rush from every side. Plant your feet and force your way forward.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'Shield Wall',
+                backgroundImage: '/dungeons/dungeon_c_01_floor_2.png',
+                openingImage: '/dungeons/dungeon_c_01_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Perform 1 set of 20 push-ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 2: Break the Formation', narrative: 'A line of goblin soldiers blocks the final path. Their shields shake with every rep. Push harder.' }
+                }]
+            }
+        ],
+        rewards: { xp: 20, coins: QUEST_COIN_REWARDS[Difficulty.C] },
         failurePenalty: { xp: 20 }
     },
     { 
         id: 'dungeon_c_02', 
-        name: 'The King\'s Road Patrol', 
+        name: 'Goblin Camp Raid', 
         grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'The King\'s Road is beset by bandits. Patrol a 1km stretch to ensure the safety of travelers.', 
-        timeLimit: 1200, 
-        floors: [{
-            id: 'f1', name: 'The King\'s Road',
-            tasks: [{ id: 't1', description: 'Jog or run for 500m', attribute: Attribute.Endurance, page: { title: 'Task 1: Securing the Road', narrative: 'Your presence is a deterrent. Your speed is a weapon. Clear the King\'s Road.' }}]
-        }], 
-        rewards: { xp: 20, coins: QUEST_COIN_REWARDS[Difficulty.C] }
+        type: 'standard',
+        description: 'A larger goblin camp spreads through the dungeon ruins. Clear each section.', 
+        previewImage: '/dungeons/dungeon_c_02.png',
+        backgroundImage: '/dungeons/dungeon_c_02.png',
+        openingImage: '/dungeons/dungeon_c_02.png',
+        timeLimit: 700,
+        floors: [
+            {
+                id: 'f1', name: 'Outer Patrol',
+                backgroundImage: '/dungeons/dungeon_c_02.png',
+                openingImage: '/dungeons/dungeon_c_02.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Perform 40 jumping jacks',
+                    attribute: Attribute.Agility,
+                    page: { title: 'Task 1: Scatter the Patrol', narrative: 'Goblin scouts rush from the shadows. Move fast and break their rhythm.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'Shield Wall',
+                backgroundImage: '/dungeons/dungeon_c_02_floor_2.png',
+                openingImage: '/dungeons/dungeon_c_02_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Perform 20 push-ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 2: Break the Shield Wall', narrative: 'Their wooden shields lock together. Push through the formation.' }
+                }]
+            },
+            {
+                id: 'f3', name: 'Archer Escape',
+                backgroundImage: '/dungeons/dungeon_c_02_floor_3.png',
+                openingImage: '/dungeons/dungeon_c_02_floor_3.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Perform 10 burpees',
+                    attribute: Attribute.Agility,
+                    page: { title: 'Task 3: Escape the Arrows', narrative: 'Arrows rain from above. Lift your knees and run.' }
+                }]
+            }
+        ],
+        rewards: { xp: 23, coins: QUEST_COIN_REWARDS[Difficulty.C] },
+        failurePenalty: { xp: 23 }
     },
     { 
         id: 'dungeon_c_03', 
-        name: 'The Great Library', 
+        name: 'Spider Nest', 
         grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'The Great Library holds infinite knowledge, but you are only permitted to study one tome. Absorb its contents for half an hour.', 
-        timeLimit: 2100, 
-        floors: [{
-            id: 'f1', name: 'The Silent Stacks',
-            tasks: [{ id: 't1', description: 'Read a book for 30 minutes', attribute: Attribute.Intellect, page: { title: 'Task 1: Communion with Knowledge', narrative: 'The silence of the library is filled with the voices of the past. Listen to them.' }}]
-        }], 
-        rewards: { xp: 17, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_04', 
-        name: 'The Banquet\'s Aftermath', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'A grand banquet has concluded, leaving a mountain of dirty plates and goblets. It falls to you to restore order to the castle kitchen.', 
-        timeLimit: 1800, 
-        floors: [{
-            id: 'f1', name: 'The Scullery',
-            tasks: [{ id: 't1', description: 'Do all the dishes in the house, including pots and pans', attribute: Attribute.Endurance, page: { title: 'Task 1: The Scullery Maid\'s Trial', narrative: 'This thankless task builds more character than a thousand battles. Find discipline in the mundane.' }}]
-        }], 
-        rewards: { xp: 16, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_05', 
-        name: 'The Triad of Power', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'A true warrior balances strength, agility, and endurance. Complete a circuit of push-ups, squats, and planks.', 
-        timeLimit: 1200, 
-        floors: [{
-            id: 'f1', name: 'The Trinity Arena',
-            tasks: [{ id: 't1', description: 'Complete 3 rounds of: 10 push-ups, 15 squats, 30-sec plank', attribute: Attribute.Strength, page: { title: 'Task 1: The Trinity Circuit', narrative: 'Forge your body in the three pillars of physical prowess. Do not falter.' }}]
-        }], 
-        rewards: { xp: 20, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_06', 
-        name: 'The Loremaster\'s Challenge', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'A Loremaster challenges you to recall an ancient lay. Read a chapter of a book, then summarize its key points.', 
-        timeLimit: 1800, 
-        floors: [{
-            id: 'f1', name: 'The High Study',
-            tasks: [{ id: 't1', description: 'Read a chapter, then write a short summary', attribute: Attribute.Intellect, page: { title: 'Task 1: Absorb and Recount', narrative: 'It is not enough to read the words; you must understand their soul. Prove your comprehension.' }}]
-        }], 
-        rewards: { xp: 19, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_07', 
-        name: 'The Garrison\'s Laundry', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'The entire garrison\'s laundry has been assigned to you. A daunting task, but one that builds character.', 
-        timeLimit: 3600, 
-        floors: [{
-            id: 'f1', name: 'The Wash Yard',
-            tasks: [{ id: 't1', description: 'Wash, dry, and fold a load of laundry', attribute: Attribute.Endurance, page: { title: 'Task 1: The Quartermaster\'s Burden', narrative: 'An army runs on clean linen as much as it does on steel. See this task through.' }}]
-        }], 
-        rewards: { xp: 15, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_08', 
-        name: 'The Endurance Run', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'The system requires you to test your stamina. A brisk walk through the enchanted forest is in order.', 
-        timeLimit: 2100, 
-        floors: [{
-            id: 'f1', name: 'The Long Path',
-            tasks: [{ id: 't1', description: 'Go for a 30-minute walk', attribute: Attribute.Endurance, page: { title: 'Task 1: The Long Path', narrative: 'This is not a race. This is a test of sustained effort. Maintain your pace.' }}]
-        }], 
-        rewards: { xp: 18, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_09', 
-        name: 'The Spellbook\'s Secrets', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'You\'ve found a new spellbook, but the incantations are complex. You must memorize one spell completely.', 
-        timeLimit: 1500, 
-        floors: [{
-            id: 'f1', name: 'The Mind Chamber',
-            tasks: [{ id: 't1', description: 'Memorize a new piece of information (e.g., a recipe, a formula, 10 vocabulary words)', attribute: Attribute.Intellect, page: { title: 'Task 1: Etching the Mind', narrative: 'Carve this new knowledge into your memory until it is as familiar as your own name.' }}]
-        }], 
-        rewards: { xp: 19, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_10', 
-        name: 'The Wyvern\'s Climb', 
-        grade: Difficulty.C, 
-        type: 'standard', 
-        description: 'To reach the wyvern\'s nest, you must scale a cliff face. This requires immense upper body strength.', 
-        timeLimit: 1200, 
-        floors: [{
-            id: 'f1', name: 'The Wyvern Cliff',
-            tasks: [{ id: 't1', description: 'Complete 3 sets of pull-ups or an alternative back exercise to failure', attribute: Attribute.Strength, page: { title: 'Task 1: The Vertical Ascent', narrative: 'The only way is up. Pull your body towards the sky, rep by rep.' }}]
-        }], 
-        rewards: { xp: 20, coins: QUEST_COIN_REWARDS[Difficulty.C] }
-    },
-    { 
-        id: 'dungeon_c_11_lz', 
-        name: 'Lava Zone', 
-        grade: Difficulty.C, 
-        description: 'user will be given a pair of eagle wings use them to fly and escape the lava.', 
-        floors: [{
-            id: 'f1', name: 'Lava Zone',
-            tasks: [{ id: 't1', description: 'complete lateral raises 3 sets of 15 reps', page: { title: 'Fly...', narrative: 'Bones rattle...' }}]
-        }],
-        rewards: { xp: 20 },
+        type: 'standard',
+        description: 'A web-filled dungeon tunnel crawling with spiders. Escape before the nest fully awakens.', 
+        previewImage: '/dungeons/dungeon_c_03.png',
+        backgroundImage: '/dungeons/dungeon_c_03.png',
+        openingImage: '/dungeons/dungeon_c_03.png',
+        timeLimit: 700,
+        floors: [
+            {
+                id: 'f1', name: 'Webbed Ground',
+                backgroundImage: '/dungeons/dungeon_c_03.png',
+                openingImage: '/dungeons/dungeon_c_03.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Perform 15 jumping squats',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 1: Hold Your Ground', narrative: 'Webs stick to your feet. keep moving.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'Wall Crawlers',
+                backgroundImage: '/dungeons/dungeon_c_03_floor_2.png',
+                openingImage: '/dungeons/dungeon_c_03_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Perform 10 pike push ups',
+                    attributes: [Attribute.Agility, Attribute.Strength],
+                    page: { title: 'Task 2: Outrun the Crawlers', narrative: 'Spiders crawl across the walls. Move before they reach you.' }
+                }]
+            },
+            {
+                id: 'f3', name: 'Escape Tunnel',
+                backgroundImage: '/dungeons/dungeon_c_03_floor_3.png',
+                openingImage: '/dungeons/dungeon_c_03_floor_3.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Perform 20 chair dips',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 3: Core of the Nest', narrative: 'The nest pulses around you. Escape through.' }
+                }]
+            }
+        ],
+        rewards: { xp: 25, coins: QUEST_COIN_REWARDS[Difficulty.C] },
         failurePenalty: { xp: 25 }
     },
     { 
-        id: 'dungeon_c_12_gp', 
-        name: 'Goblin Pack', 
+        id: 'dungeon_c_04', 
+        name: 'Residents of Grave', 
         grade: Difficulty.C, 
-        description: 'kill the goblins', 
-        floors: [{
-            id: 'f1', name: 'Goblins Pack',
-            tasks: [{ id: 't1', description: 'Shadow box for 3 mins', page: { title: 'fight...', narrative: 'kill the goblins...' }}]
-        }],
-        rewards: { xp: 15 },
-        failurePenalty: { xp: 15 }
+        type: 'standard',
+        description: 'An abandoned graveyard has appeared inside the gate. The dead are crawling out of their graves.', 
+        previewImage: '/dungeons/dungeon_c_04.png',
+        backgroundImage: '/dungeons/dungeon_c_04.png',
+        openingImage: '/dungeons/dungeon_c_04.png',
+        timeLimit: 700,
+        floors: [
+            {
+                id: 'f1', name: 'Restless Graves',
+                backgroundImage: '/dungeons/dungeon_c_04.png',
+                openingImage: '/dungeons/dungeon_c_04.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Perform 20 lunges',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 1: Move', narrative: 'The soil shifts beneath you. Hands crawl from the graves. Strengthen your core and resist the dead.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'The Dead Chase',
+                backgroundImage: '/dungeons/dungeon_c_04_floor_2.png',
+                openingImage: '/dungeons/dungeon_c_04_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Run 500m. Fail if pace is slower than 07:00/km',
+                    tracking: { mode: 'distance', distanceMeters: 500, autoComplete: true, maxPaceSecondsPerKm: 420 },
+                    attributes: [Attribute.Agility, Attribute.Strength],
+                    page: { title: 'Task 2: Run 500m', narrative: 'The horde of zombie are comming after you... RUN!!' }
+                }]
+            },
+            {
+                id: 'f3', name: 'Cornered',
+                backgroundImage: '/dungeons/dungeon_c_04_floor_3.png',
+                openingImage: '/dungeons/dungeon_c_04_floor_3.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Perform 25 push ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 3: Perform 25 Push Ups', narrative: 'Some of the dead have cornerd you right before the exit. Kill them and reach the exit.' }
+                }]
+            }
+        ],
+        rewards: { xp: 38, coins: QUEST_COIN_REWARDS[Difficulty.C] },
+        failurePenalty: { xp: 38 }
     },
     // --- B-RANK ---
     { 
         id: 'dungeon_b_01', 
-        name: 'The Colosseum Gauntlet', 
+        name: 'Orc War Hall', 
         grade: Difficulty.B, 
-        type: 'standard', 
-        description: 'You are a contender in the Colosseum. Survive four rounds of grueling exercises to earn the crowd\'s favor.', 
-        timeLimit: 2700, 
-        floors: [{
-            id: 'f1', name: 'The Colosseum Floor',
-            tasks: [{ id: 't1', description: 'Complete 3 sets of a compound exercise (e.g., 4x12 squats or deadlifts)', attribute: Attribute.Strength, page: { title: 'Task 1: The Test of Strength', narrative: 'The crowd roars. Your opponent is the iron itself. Defeat it four times over.' }}]
-        }], 
-        rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] }
-    },
-    { 
-        id: 'dungeon_b_02', 
-        name: 'The Titan\'s Legs', 
-        grade: Difficulty.B, 
-        type: 'standard', 
-        description: 'To stand against a titan, you must possess legs of equal might. This brutal leg workout will forge them.', 
-        timeLimit: 2100, 
-        floors: [{
-            id: 'f1', name: 'The Earth Shaker Arena',
-            tasks: [{ id: 't1', description: 'Complete 2 sets of a difficult leg exercise (e.g., Bulgarian split squats) to failure', attribute: Attribute.Strength, page: { title: 'Task 1: The Earth Shaker', narrative: 'This exercise will break you down to build you up stronger. Push until your legs scream for mercy.' }}]
-        }], 
-        rewards: { xp: 38, coins: QUEST_COIN_REWARDS[Difficulty.B] }
-    },
-    { 
-        id: 'dungeon_b_03', 
-        name: 'The Full-Body Blitz', 
-        grade: Difficulty.B, 
-        type: 'standard', 
-        description: 'The ultimate test of a B-Rank warrior. A relentless full-body workout designed to push you to your limits.', 
-        timeLimit: 1800, 
-        floors: [{
-            id: 'f1', name: 'The Eye of the Storm',
-            tasks: [{ id: 't1', description: 'Complete 3 rounds of: 10 burpees, 20 lunges, 15 push-ups', attribute: Attribute.Endurance, page: { title: 'Task 1: The Storm', narrative: 'There is no rest, no respite. Only the storm of movement. Endure it.' }}]
-        }], 
-        rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] }
-    },
-    { 
-        id: 'dungeon_b_04', 
-        name: 'The Mountain Pass', 
-        grade: Difficulty.B, 
-        type: 'standard', 
-        description: 'A treacherous mountain pass stands between you and your objective. A 1km run is the only way through.', 
-        timeLimit: 2400, 
-        floors: [{
-            id: 'f1', name: 'The High Road',
-            tasks: [{ id: 't1', description: 'Run 1km', attribute: Attribute.Endurance, page: { title: 'Task 1: The High Road', narrative: 'The air is thin and the path is steep. Your endurance is the only thing that will see you to the other side.' }}]
-        }], 
-        rewards: { xp: 35, coins: QUEST_COIN_REWARDS[Difficulty.B] }
-    },
-    { 
-        id: 'dungeon_b_05', 
-        name: 'The Forgemaster\'s Challenge', 
-        grade: Difficulty.B, 
-        type: 'standard', 
-        description: 'The Forgemaster demands you prove your upper body strength. Two grueling exercises are your test.', 
-        timeLimit: 2700, 
-        floors: [{
-            id: 'f1', name: 'The Twin Anvils',
-            tasks: [{ id: 't1', description: 'Complete 2 difficult upper body exercises (e.g., 4 sets of pull-ups, 4 sets of bench press)', attribute: Attribute.Strength, page: { title: 'Task 1: The Twin Anvils', narrative: 'One exercise tests your pull, the other tests your push. Master both to earn the Forgemaster\'s respect.' }}]
-        }], 
-        rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] }
-    },
-    { 
-        id: 'dungeon_b_06_cs', 
-        name: 'The Code Sorcerer', 
-        grade: Difficulty.B, 
-        description: 'Mastering logical incantations.', 
-        floors: [{
-            id: 'f1', name: 'Sanctum of Logic',
-            tasks: [{ id: 't1', description: 'Study 40 mins', page: { title: 'Decipher', narrative: 'The glyphs hum...' }}]
-        }],
-        rewards: { xp: 35 },
+        type: 'standard',
+        description: 'A brutal orc war hall filled with armored warriors. Break through their ranks with raw strength.', 
+        previewImage: '/dungeons/dungeon_b_01.png',
+        backgroundImage: '/dungeons/dungeon_b_01.png',
+        openingImage: '/dungeons/dungeon_b_01.png',
+        timeLimit: 600,
+        floors: [
+            {
+                id: 'f1', name: 'Orc Grunts',
+                backgroundImage: '/dungeons/dungeon_b_01.png',
+                openingImage: '/dungeons/dungeon_b_01.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Perform 30 push-ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 1: Crush the Grunts', narrative: 'The first wave charges with rusted blades. Meet them with force.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'Orc Mages',
+                backgroundImage: '/dungeons/dungeon_b_01_floor_2.png',
+                openingImage: '/dungeons/dungeon_b_01_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Perform 30 squats',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 2: Defeat the Orc Mages', narrative: 'Orc mages are getting you cornered. Do not falter.' }
+                }]
+            },
+            {
+                id: 'f3', name: 'Orc Chief',
+                backgroundImage: '/dungeons/dungeon_b_01_floor_3.png',
+                openingImage: '/dungeons/dungeon_b_01_floor_3.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Perform 30 push ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 3: Challenge the War Chief', narrative: 'The orc chief steps forward. Prove your strength is real.' }
+                }]
+            }
+        ],
+        rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] },
         failurePenalty: { xp: 40 }
     },
     { 
-        id: 'dungeon_b_07_wf', 
+        id: 'dungeon_b_02', 
         name: 'Wild Forest', 
-        grade: Difficulty.C, 
-        description: 'Survive the wild life.', 
-        floors: [{
-            id: 'f1', name: 'Wild Forest',
-            tasks: [{ id: 't1', description: '50 push ups', page: { title: 'Push...', narrative: 'Strong will...' }}]
-        }],
-        rewards: { xp: 35 },
+        grade: Difficulty.B, 
+        type: 'standard',
+        description: 'You are lost in a mysterious forest, you must find a way out with caution.', 
+        previewImage: '/dungeons/dungeon_b_02.png',
+        backgroundImage: '/dungeons/dungeon_b_02.png',
+        openingImage: '/dungeons/dungeon_b_02.png',
+        timeLimit: 600,
+        floors: [
+            {
+                id: 'f1', name: 'The Search',
+                backgroundImage: '/dungeons/dungeon_b_02.png',
+                openingImage: '/dungeons/dungeon_b_02.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Walk or run 500m',
+                    tracking: { mode: 'distance', distanceMeters: 500, autoComplete: true },
+                    attribute: Attribute.Endurance,
+                    page: { title: 'Task 1: Explore the Forest', narrative: 'There is definitely something out there.' }
+                }]
+            },
+            {
+                id: 'f2', name: 'Wild Beasts',
+                backgroundImage: '/dungeons/dungeon_b_02_floor_2.png',
+                openingImage: '/dungeons/dungeon_b_02_floor_2.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Perform 25 squats',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 2: Defeat the Wild Beasts', narrative: 'Beast pack is attacking in coordination.' }
+                }]
+            },
+            {
+                id: 'f3', name: 'Giant Beast',
+                backgroundImage: '/dungeons/dungeon_b_02_floor_3.png',
+                openingImage: '/dungeons/dungeon_b_02_floor_3.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Perform 30 push ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 3: Defeat the Giant Beast', narrative: 'The giant beast roars.' }
+                }]
+            }
+        ],
+        rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] },
         failurePenalty: { xp: 40 }
     },
     // --- A-RANK ---
@@ -543,6 +561,9 @@ export const DUNGEONS: Dungeon[] = [
         name: 'Mystery of Miracle', 
         grade: Difficulty.A, 
         description: 'Escaping toxic fog in a damp cave.', 
+        previewImage: '/dungeons/dungeon_a_01.jpg',
+        backgroundImage: '/dungeons/dungeon_a_01.jpg',
+        openingImage: '/dungeons/dungeon_a_01.jpg',
         floors: [
             { id: 'f1', name: 'Mist Entry', tasks: [{ id: 't1', description: 'plank 2 minutes', page: { title: 'Holding Breath', narrative: 'The air turns thick...' }}]},
             { id: 'f2', name: 'Poison Path', tasks: [{ id: 't2', description: '30 Squats', page: { title: 'Swift Move', narrative: 'Vapors rise...' }}]},
@@ -556,6 +577,9 @@ export const DUNGEONS: Dungeon[] = [
         name: 'Orc Attack', 
         grade: Difficulty.A, 
         description: 'Defeat all the Orcs in the dungeon.', 
+        previewImage: '/dungeons/dungeon_a_02.jpg',
+        backgroundImage: '/dungeons/dungeon_a_02.jpg',
+        openingImage: '/dungeons/dungeon_a_02.jpg',
         floors: [
             { id: 'f1', name: 'Orc Goons', tasks: [{ id: 't1', description: 'shadow box 3 minutes 5 rounds', page: { title: '3 groups of Orcs attacks', narrative: 'ambushed...' }}]},
             { id: 'f2', name: 'High Orcs', tasks: [{ id: 't2', description: 'weighted shadow boxing 3mins 3 rounds', page: { title: 'tough situatiom', narrative: 'in a pinch...' }}]},
@@ -570,6 +594,9 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'The ground rumbles as you descend into a volcano. The air is scorching, and the floor is unstable. You must reach the summit and escape before it erupts.', 
+        previewImage: '/dungeons/dungeon_a_03.jpg',
+        backgroundImage: '/dungeons/dungeon_a_03.jpg',
+        openingImage: '/dungeons/dungeon_a_03.jpg',
         timeLimit: 900, 
         floors: [
             { id: 'f1', name: 'The Slopes', tasks: [{ id: 't1', description: 'Perform 50 jumping lunges to scale the slippery incline.', attribute: Attribute.Strength, page: { title: 'Task 1: The Ascent', narrative: 'The volcano\'s slope is steep and covered in treacherous ash.' }}]},
@@ -585,6 +612,9 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'You\'ve been dropped into an assassin\'s training gauntlet. Traps are everywhere. Your only hope is to move with inhuman speed and agility.', 
+        previewImage: '/dungeons/dungeon_a_04.jpg',
+        backgroundImage: '/dungeons/dungeon_a_04.jpg',
+        openingImage: '/dungeons/dungeon_a_04.jpg',
         timeLimit: 720, 
         floors: [
             { id: 'f1', name: 'Hall of Blades', tasks: [{ id: 't1', description: '3 minutes of high-intensity shadow boxing to disarm pressure plates', attribute: Attribute.Agility, page: { title: 'Task 1: The Hall of Blades', narrative: 'The floor is a tapestry of pressure plates.' }}]},
@@ -600,6 +630,9 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'A great wyrm guards the path. It unleashes a torrent of fire, forcing you to constantly move. This is a pure test of agility and stamina.', 
+        previewImage: '/dungeons/dungeon_a_05.jpg',
+        backgroundImage: '/dungeons/dungeon_a_05.jpg',
+        openingImage: '/dungeons/dungeon_a_05.jpg',
         timeLimit: 600, 
         floors: [
             { id: 'f1', name: 'The Scorched Path', tasks: [{ id: 't1', description: 'Complete 3 rounds of: 10 burpees, 20 mountain climbers.', attribute: Attribute.Agility, page: { title: 'Task 1: The First Salvo', narrative: 'The wyrm unleashes its first wave of fire.' }}]},
@@ -615,11 +648,14 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'You\'ve consumed a berserker\'s brew. A wave of uncontrollable energy fills you. You must expend it through intense physical exertion before it consumes you.', 
+        previewImage: '/dungeons/dungeon_a_06.jpg',
+        backgroundImage: '/dungeons/dungeon_a_06.jpg',
+        openingImage: '/dungeons/dungeon_a_06.jpg',
         timeLimit: 900, 
         floors: [
             { id: 'f1', name: 'Primal Burst', tasks: [{ id: 't1', description: 'Perform 50 kettlebell swings (or dumbbell swings/burpees) to begin expending the raw energy.', attribute: Attribute.Strength, page: { title: 'Task 1: The Boiling Blood', narrative: 'The rage begins to build, a fire in your veins.' }}]},
             { id: 'f2', name: 'Unchained Fury', tasks: [{ id: 't2', description: 'Perform 3 sets of maximum-repetition push-ups, with only 30 seconds rest between sets.', attribute: Attribute.Strength, page: { title: 'Task 2: The Unchained Fury', narrative: 'The brew takes full effect. You feel an urge to destroy.' }}]},
-            { id: 'f3', name: 'Rage Burnout', tasks: [{ id: 't3', description: 'Perform a 100-meter sprint at maximum effort to fully burn out the rage.', attribute: Attribute.Agility, page: { title: 'Task 3: The Final Howl', narrative: 'The rage is almost spent. PURGE IT.' }}]}
+            { id: 'f3', name: 'Rage Burnout', tasks: [{ id: 't3', description: 'Perform a 100-meter sprint at maximum effort to fully burn out the rage.', tracking: { mode: 'distance', distanceMeters: 100, autoComplete: true }, attribute: Attribute.Agility, page: { title: 'Task 3: The Final Howl', narrative: 'The rage is almost spent. PURGE IT.' }}]}
         ],
         rewards: { xp: 130, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
         failurePenalty: { xp: 50 }
@@ -630,6 +666,9 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'You are caught in a gravity well that threatens to crush you. Only by generating immense upward force can you hope to escape its pull.', 
+        previewImage: '/dungeons/dungeon_a_07.jpg',
+        backgroundImage: '/dungeons/dungeon_a_07.jpg',
+        openingImage: '/dungeons/dungeon_a_07.jpg',
         timeLimit: 720, 
         floors: [
             { id: 'f1', name: 'Crushing Weight', tasks: [{ id: 't1', description: 'Perform 100 weighted calf raises (or 200 bodyweight) to fight against the initial pull.', attribute: Attribute.Strength, page: { title: 'Task 1: Resisting the Pull', narrative: 'The gravity well pulls at you, trying to root you to the ground.' }}]},
@@ -645,6 +684,9 @@ export const DUNGEONS: Dungeon[] = [
         grade: Difficulty.A, 
         type: 'standard', 
         description: 'The horde is endless. Your back is against the wall. This is your final stand. Fight until you have nothing left.', 
+        previewImage: '/dungeons/dungeon_a_08.jpg',
+        backgroundImage: '/dungeons/dungeon_a_08.jpg',
+        openingImage: '/dungeons/dungeon_a_08.jpg',
         timeLimit: 1200, 
         floors: [
             { id: 'f1', name: 'The Outer Wall', tasks: [{ id: 't1', description: 'Survive the first 5 minutes by completing 50 push-ups.', attribute: Attribute.Strength, page: { title: 'Task 1: The Vanguard', narrative: 'The first wave of the horde crashes against your position.' }}]},
@@ -660,9 +702,12 @@ export const DUNGEONS: Dungeon[] = [
         name: 'Grim Reaper', 
         grade: Difficulty.S, 
         description: 'Outrunning death itself.', 
+        previewImage: '/dungeons/dungeon_s_01.jpg',
+        backgroundImage: '/dungeons/dungeon_s_01.jpg',
+        openingImage: '/dungeons/dungeon_s_01.jpg',
         floors: [
-            { id: 'f1', name: 'Chamber of Silence', tasks: [{ id: 't1', description: '3km Run nonstop no music', page: { title: 'Whispers', narrative: 'its easy to quit...' }}]},
-            { id: 'f2', name: 'End of the tunnel', tasks: [{ id: 't2', description: '100m sprint', page: { title: 'the light', narrative: 'final push...' }}]},
+            { id: 'f1', name: 'Chamber of Silence', tasks: [{ id: 't1', description: '3km Run nonstop no music', tracking: { mode: 'distance', distanceMeters: 3000, autoComplete: true }, attribute: Attribute.Endurance, page: { title: 'Whispers', narrative: 'its easy to quit...' }}]},
+            { id: 'f2', name: 'End of the tunnel', tasks: [{ id: 't2', description: '100m sprint', tracking: { mode: 'distance', distanceMeters: 100, autoComplete: true }, attribute: Attribute.Agility, page: { title: 'the light', narrative: 'final push...' }}]},
         ],
         rewards: { xp: 450 },
         failurePenalty: { xp: 600 }
@@ -674,31 +719,31 @@ export const SHOP_ITEMS: ShopItem[] = [
     { id: 'helm_rogue', name: 'Rogue Helmet', type: 'Gear', slot: 'helmet', rank: Difficulty.C, bonusXp: 1, effectDescription: "Basic equipment.", cost: 100 },
     { id: 'helm_iron', name: 'Iron Helmet', type: 'Gear', slot: 'helmet', rank: Difficulty.B, bonusXp: 2, effectDescription: "Decent gear.", cost: 250 },
     { id: 'helm_shadow', name: 'Shadow Helmet', type: 'Gear', slot: 'helmet', rank: Difficulty.A, bonusXp: 3, effectDescription: "Forged with dark metals.", cost: 500 },
-    { id: 'helm_light', name: 'Brilliant Light Helmet', type: 'Gear', slot: 'helmet', rank: Difficulty.S, bonusXp: 3, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200 },
+    { id: 'helm_light', name: 'Brilliant Light Helmet', type: 'Gear', slot: 'helmet', rank: Difficulty.S, bonusXp: 3, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200, diamondCost: 10 },
     
     // Armor
     { id: 'armor_rogue', name: 'Rogue Armor', type: 'Gear', slot: 'armor', rank: Difficulty.C, bonusXp: 1, effectDescription: "Basic equipment.", cost: 100 },
     { id: 'armor_iron', name: 'Iron Armor', type: 'Gear', slot: 'armor', rank: Difficulty.B, bonusXp: 2, effectDescription: "Decent gear.", cost: 250 },
     { id: 'armor_shadow', name: 'Shadow Armor', type: 'Gear', slot: 'armor', rank: Difficulty.A, bonusXp: 5, effectDescription: "Forged with dark metals.", cost: 500 },
-    { id: 'armor_light', name: 'Brilliant Light Armor', type: 'Gear', slot: 'armor', rank: Difficulty.S, bonusXp: 15, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200 },
-    { id: 'armor_berserker', name: 'Berserker Armor', type: 'Gear', slot: 'armor', rank: Difficulty.X, bonusXp: 0, effectDescription: "CURSED. CRAVES BLOOD AND ATTRACTS EVIL. Significantly increases penalty but offers greater bonuses. Cannot be removed normally.", cost: 2200 },
+    { id: 'armor_light', name: 'Brilliant Light Armor', type: 'Gear', slot: 'armor', rank: Difficulty.S, bonusXp: 15, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200, diamondCost: 10 },
+    { id: 'armor_berserker', name: 'Berserker Armor', type: 'Gear', slot: 'armor', rank: Difficulty.X, bonusXp: 0, effectDescription: "CURSED. CRAVES BLOOD AND ATTRACTS EVIL. Significantly increases penalty but offers greater bonuses. Cannot be removed normally.", cost: 2200, diamondCost: 50 },
      
     // Gloves
     { id: 'gloves_rogue', name: 'Rogue Gloves', type: 'Gear', slot: 'gloves', rank: Difficulty.C, bonusXp: 1, effectDescription: "Basic equipment.", cost: 100 },
     { id: 'gloves_iron', name: 'Iron Gloves', type: 'Gear', slot: 'gloves', rank: Difficulty.B, bonusXp: 2, effectDescription: "Decent gear.", cost: 250 },
     { id: 'gloves_shadow', name: 'Shadow Gloves', type: 'Gear', slot: 'gloves', rank: Difficulty.A, bonusXp: 4, effectDescription: "Forged with dark metals.", cost: 500 },
-    { id: 'gloves_light', name: 'Brilliant Light Gloves', type: 'Gear', slot: 'gloves', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200 },
+    { id: 'gloves_light', name: 'Brilliant Light Gloves', type: 'Gear', slot: 'gloves', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200, diamondCost: 10 },
     
     // Boots
     { id: 'boots_rogue', name: 'Rogue Boots', type: 'Gear', slot: 'boots', rank: Difficulty.C, bonusXp: 1, effectDescription: "Basic equipment.", cost: 100 },
     { id: 'boots_iron', name: 'Iron Boots', type: 'Gear', slot: 'boots', rank: Difficulty.B, bonusXp: 2, effectDescription: "Decent gear.", cost: 250 },
     { id: 'boots_shadow', name: 'Shadow Boots', type: 'Gear', slot: 'boots', rank: Difficulty.A, bonusXp: 4, effectDescription: "Forged with dark metals.", cost: 500 },
-    { id: 'boots_light', name: 'Brilliant Light Boots', type: 'Gear', slot: 'boots', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200 },
+    { id: 'boots_light', name: 'Brilliant Light Boots', type: 'Gear', slot: 'boots', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1200, diamondCost: 10 },
     
     // Special Gear
     { id: 'gear_shadow', name: 'Shadow Sword', type: 'Gear', slot: 'gear', rank: Difficulty.A, bonusXp: 4, effectDescription: "Forged with dark metals.", cost: 700 },
-    { id: 'gear_light', name: 'Brilliant Light Sword', type: 'Gear', slot: 'gear', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1500 },
-    { id: 'gear_dragon_slayer', name: 'Dragon Slayer', type: 'Gear', slot: 'gear', rank: Difficulty.S_PLUS, bonusXp: 50, effectDescription: "Forged with the malice of slain spirits.", cost: 3000 },
+    { id: 'gear_light', name: 'Brilliant Light Sword', type: 'Gear', slot: 'gear', rank: Difficulty.S, bonusXp: 12, effectDescription: "Forged with the highest caliber of metals and gold.", cost: 1500, diamondCost: 10 },
+    { id: 'gear_dragon_slayer', name: 'Dragon Slayer', type: 'Gear', slot: 'gear', rank: Difficulty.S_PLUS, bonusXp: 50, effectDescription: "Forged with the malice of slain spirits.", cost: 3000, diamondCost: 50 },
     
     // Items
     { id: 'brilliant_light_orb', name: 'Brilliant Light Orb', type: 'Potion', rank: Difficulty.S, effectDescription: "Used to Uplift Berserker Gear curse.", cost: 2000 },
@@ -820,6 +865,7 @@ export const SYSTEM_QUESTS: Quest[] = [
     // E Rank
     { id: 'sys_e_01', name: 'WALKING', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "THE START OF A JOURNEY.", type: 'repetitive', isSystemQuest: true },
     { id: 'sys_e_02', name: 'WARM UP', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "5-10 MINUTES OF WARM UP TO PREPARE FOR THE FIGHTS AHEAD.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_run_01', name: 'RUN QUEST', difficulty: Difficulty.E, attributes: [Attribute.Endurance, Attribute.Agility], description: "START A GPS TRACKED RUN. FINAL GRADE IS BASED ON DISTANCE AND PACE.", type: 'repetitive', questMode: 'distance', isSystemQuest: true },
     // D Rank
     { id: 'sys_d_01', name: '15 PUSH UPS', difficulty: Difficulty.D, attributes: [Attribute.Strength], description: "COMPLETE 15 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
     { id: 'sys_d_02', name: 'DEAD HANG 30SEC', difficulty: Difficulty.D, attributes: [Attribute.Endurance], description: "HOLD THE DEAD HANG FOR 30 SECONDS.", type: 'repetitive', isSystemQuest: true },
@@ -830,16 +876,16 @@ export const SYSTEM_QUESTS: Quest[] = [
     { id: 'sys_c_03', name: 'PLANK 60 SEC', difficulty: Difficulty.C, attributes: [Attribute.Endurance, Attribute.Strength], description: "HOLD PLANK FOR 60 SECONDS.", type: 'repetitive', isSystemQuest: true },
     { id: 'sys_c_04', name: 'SQUATS 20', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "PERFORM 20 SQUATS.", type: 'repetitive', isSystemQuest: true },
     // B Rank
-    { id: 'sys_b_01', name: '1KM RUN', difficulty: Difficulty.B, attributes: [Attribute.Endurance], description: "COMPLETE A 1 KILOMETER RUN.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_b_02', name: 'STUDY 1HR', difficulty: Difficulty.B, attributes: [Attribute.Intellect], description: "SEEK KNOWLEDGE OF ANY KIND FOR AN HOUR.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_b_01', name: 'STUDY 1HR', difficulty: Difficulty.B, attributes: [Attribute.Intellect], description: "SEEK KNOWLEDGE OF ANY KIND FOR AN HOUR.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_b_02', name: 'PUSH UPS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 50 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_b_03', name: 'SQUATS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "PERFORM 50 SQUATS.", type: 'repetitive', isSystemQuest: true },
     // A Rank
-    { id: 'sys_a_01', name: 'PUSH UPS 50', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 50 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_a_02', name: 'SQUATS 50', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "PERFORM 50 SQUATS.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_a_01', name: 'PUSH UPS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 75 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_a_02', name: 'SQUATS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "PERFORM 75 SQUATS.", type: 'repetitive', isSystemQuest: true },
     { id: 'sys_a_03', name: '40 BURPEES', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "PERFORM 40 BURPEES.", type: 'repetitive', isSystemQuest: true },
     // S Rank
-    { id: 'sys_s_01', name: 'RUNNING 3K', difficulty: Difficulty.S, attributes: [Attribute.Endurance], description: "COMPLETE A 3 KILOMETER RUN.", type: 'repetitive', isSystemQuest: true },
-    // S_PLUS Rank
-    { id: 'sys_sp_01', name: 'RUNNING 5K', difficulty: Difficulty.S_PLUS, attributes: [Attribute.Endurance], description: "COMPLETE A 5 KILOMETER RUN.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_s_01', name: 'PUSH UPS 100', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "COMPLETE 100 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_s_02', name: 'SQUATS 100', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "PERFORM 100 SQUATS.", type: 'repetitive', isSystemQuest: true },
     // Special Rank
     { id: 'sys_x_01', name: 'SLOTH-GLUTTONY', difficulty: Difficulty.X, attributes: [], description: "An uncontrollable temptation boils within. You can only succumb to it. There is no victory, only the aftermath.", failurePenalty: { xp: 250 }, type: 'repetitive', isSystemQuest: true },
 ];

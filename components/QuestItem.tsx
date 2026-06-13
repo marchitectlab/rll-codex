@@ -58,7 +58,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
       onStartDistance?.(quest);
       return;
     }
-    if (isTimedQuest || quest.questMode === 'standard' || !quest.questMode) {
+    if (isTimedQuest || quest.questMode === 'standard') {
       onStartQuest?.(quest);
       return;
     }
@@ -97,28 +97,28 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
                         <TrashIcon />
                     </button>
                 )}
-                <div className={`font-orbitron text-lg md:text-2xl font-black w-10 md:w-12 text-center mr-2 md:mr-4 flex-shrink-0 ${styles.text} drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]`}>
+                <div className={`font-orbitron text-base md:text-xl font-bold w-10 md:w-12 text-center mr-2 md:mr-4 flex-shrink-0 ${styles.text} drop-shadow-[0_0_8px_rgba(0,0,0,0.8)]`}>
                     [{quest.difficulty}]
                 </div>
                 <div className="min-w-0 flex-grow pr-2 md:pr-4">
-                    <p className="font-orbitron font-black text-white text-[10px] md:text-[11px] leading-tight md:leading-[20px] uppercase tracking-[0.05em] md:tracking-[0.1em] truncate mb-0.5 md:mb-1">{quest.name}</p>
+                    <p className="font-orbitron font-bold text-white text-[11px] md:text-[12px] leading-tight md:leading-[20px] uppercase tracking-normal truncate mb-0.5 md:mb-1">{quest.name}</p>
                     <div className="flex flex-wrap items-center gap-2 md:gap-4">
                         {isDistanceQuest ? (
-                             <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-cyan-300">
+                             <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-normal text-cyan-300">
                                 GPS Run: E to S+ based on distance
                              </p>
                         ) : isTimedQuest ? (
-                             <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-cyan-300">
+                             <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-normal text-cyan-300">
                                 {quest.questMode === 'countdown' ? 'Timer auto-clear protocol' : `${quest.timerConfig?.roundCount || 1} rounds protocol`}
                              </p>
                         ) : xp > 0 && (
-                             <p className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${styles.text}`}>
+                             <p className={`text-[9px] md:text-[10px] font-semibold uppercase tracking-normal ${styles.text}`}>
                                 {hasFailureCondition ? `Loss: -${quest.failurePenalty?.xp} XP` : `Gain: +${xp} XP`}
                              </p>
                         )}
                         {!hasFailureCondition && coins > 0 && (
-                            <p className="text-[9px] md:text-[10px] font-black text-yellow-400 flex items-center tracking-widest">
-                                <CoinIcon/>{coins} <span className="ml-1 text-[7px] md:text-[8px] opacity-60">GOLD</span>
+                            <p className="text-[8px] md:text-[9px] font-medium text-yellow-400 flex items-center tracking-normal">
+                                <CoinIcon/>{coins} <span className="ml-1 text-[7px] opacity-60">GOLD</span>
                             </p>
                         )}
                     </div>
@@ -126,7 +126,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
             </div>
             
             <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 md:gap-3 flex-shrink-0 w-full sm:w-auto ${quest.attributes.length > 0 ? 'sm:mt-4' : ''}`}>
-                <span className="text-[7px] md:text-[8px] font-black inline-block py-0.5 md:py-1 px-2 md:px-3 rounded-sm uppercase tracking-[0.2em] md:tracking-[0.3em] border border-white/10 bg-black/60 text-gray-500">
+                <span className="text-[7px] md:text-[8px] font-semibold inline-block py-0.5 md:py-1 px-2 md:px-3 rounded-sm uppercase tracking-normal border border-white/10 bg-black/60 text-gray-500">
                     {isDistanceQuest ? 'distance' : isTimedQuest ? quest.questMode : quest.type.replace('-', ' ')}
                 </span>
                 {hasFailureCondition ? (
@@ -139,9 +139,9 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
                 ) : (
                     <button
                         onClick={handleAction}
-                        className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-sm uppercase text-[9px] md:text-[10px] font-black tracking-widest transition-all shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] w-24 md:w-[112px] border border-blue-400/40"
+                        className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-sm uppercase text-[9px] md:text-[10px] font-bold tracking-normal transition-all shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] w-24 md:w-[112px] border border-blue-400/40"
                     >
-                        {isDistanceQuest ? 'Start Run' : isTimedQuest ? 'Enter' : 'Enter'}
+                        {isDistanceQuest ? 'Start Run' : (isTimedQuest || quest.questMode === 'standard') ? 'Enter' : 'Complete'}
                     </button>
                 )}
             </div>

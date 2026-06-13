@@ -8,63 +8,46 @@ const steps = [
   {
     label: 'Awakening',
     title: 'System Online',
-    grade: 'E',
     body: 'R.L.L turns real actions into quests, XP, ranks, skills, equipment, and dungeon clears.',
     points: ['Complete real tasks', 'Earn XP', 'Build discipline'],
   },
   {
     label: 'Leveling',
     title: 'Rank Protocol',
-    grade: 'D',
     body: 'Your level and rank rise as you gain XP. Miss discipline long enough and the system can punish sloth.',
     points: ['XP raises level', 'Level raises rank', 'Consistency prevents penalties'],
   },
   {
     label: 'Quests',
     title: 'Mission Board',
-    grade: 'C',
     body: 'Create standard, timer, round, and distance quests. Clear them only when the real-world task is done.',
     points: ['Daily missions', 'Timed runs', 'Distance tracking'],
   },
   {
     label: 'Skills',
     title: 'Ability Matrix',
-    grade: 'B',
     body: 'Skills grow through training. Locked skills, prerequisites, folders, and skill trees let you build your own progression path.',
     points: ['Train skills', 'Link prerequisites', 'Unlock higher tiers'],
   },
   {
     label: 'Dungeons',
     title: 'Gate Operations',
-    grade: 'A',
     body: 'Dungeons are higher-risk multi-step challenges. Clear floors, claim rewards, and return stronger.',
     points: ['Enter gates', 'Clear floors', 'Collect loot'],
   },
   {
     label: 'Gear',
     title: 'Inventory Sync',
-    grade: 'S',
     body: 'Shop gear, materials, enhancements, and reports help you tune your build and track long-term progress.',
     points: ['Buy gear', 'Enhance equipment', 'Export reports'],
   },
   {
     label: 'Begin',
     title: 'Journey Authorized',
-    grade: 'S+',
     body: 'Start with one simple quest today. Build the system slowly, then make it ruthless when your habits are ready.',
     points: ['Open Quests', 'Clear your first mission', 'Return tomorrow'],
   },
 ];
-
-const gradeTone: Record<string, string> = {
-  E: 'text-gray-300 border-gray-500/40',
-  D: 'text-green-300 border-green-500/40',
-  C: 'text-orange-300 border-orange-500/40',
-  B: 'text-indigo-300 border-indigo-500/40',
-  A: 'text-purple-300 border-purple-500/40',
-  S: 'text-yellow-300 border-yellow-500/50',
-  'S+': 'text-red-300 border-red-500/50',
-};
 
 export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) => {
   const [index, setIndex] = useState(0);
@@ -81,9 +64,6 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
               <div>
                 <p className="font-orbitron text-[8px] text-blue-400 uppercase tracking-[0.35em]">First Login Sequence</p>
                 <h1 className="font-orbitron text-2xl md:text-4xl font-black text-blue-200 uppercase mt-1">R.L.L Lite</h1>
-              </div>
-              <div className={`font-orbitron text-3xl md:text-5xl font-black border px-4 py-2 rounded ${gradeTone[step.grade]}`}>
-                [{step.grade}]
               </div>
             </div>
             <div className="h-1 bg-slate-900 border border-blue-500/10 rounded mt-5 overflow-hidden">
@@ -113,7 +93,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
                   onClick={() => setIndex(itemIndex)}
                   className={`w-full text-left border rounded px-3 py-2 transition-all ${itemIndex === index ? 'border-cyan-400/60 bg-blue-500/10 text-white' : 'border-white/10 bg-black/20 text-gray-500 hover:text-gray-300'}`}
                 >
-                  <span className="font-orbitron text-[9px] uppercase tracking-widest">[{item.grade}] {item.label}</span>
+                  <span className="font-orbitron text-[9px] uppercase tracking-widest">{item.label}</span>
                 </button>
               ))}
             </aside>

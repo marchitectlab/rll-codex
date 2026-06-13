@@ -26,8 +26,8 @@ const getInitialTime = (quest: Quest): number => {
 
 const StatPanel: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-white' }) => (
   <div className="border border-blue-500/20 bg-black/40 rounded p-3">
-    <p className="font-orbitron text-[8px] text-blue-300/60 uppercase tracking-[0.25em] mb-1">{label}</p>
-    <p className={`font-orbitron text-xl md:text-2xl font-black ${tone}`}>{value}</p>
+    <p className="font-orbitron text-[8px] text-blue-300/60 uppercase tracking-normal mb-1">{label}</p>
+    <p className={`font-orbitron text-base md:text-xl font-bold ${tone}`}>{value}</p>
   </div>
 );
 
@@ -104,27 +104,27 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
 
   return (
     <div className="min-h-full bg-[#020617] text-white overflow-y-auto">
-      <div className="min-h-full px-4 py-5 md:p-8 flex flex-col">
+      <div className="min-h-full px-4 pb-5 md:p-8 flex flex-col" style={{ paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
         <header className="flex items-center justify-between gap-3 mb-6">
           <button onClick={onCancel} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-gray-400 border border-white/10 px-3 py-2 rounded hover:text-white hover:border-blue-400/50">
             Back
           </button>
           <div className="text-right min-w-0">
             <p className="font-orbitron text-[8px] text-blue-400 uppercase tracking-[0.3em]">{getModeLabel(quest)}</p>
-            <h1 className="font-orbitron text-lg md:text-2xl font-black uppercase tracking-widest truncate">{quest.name}</h1>
+            <h1 className="font-orbitron text-base md:text-xl font-bold uppercase tracking-normal truncate">{quest.name}</h1>
           </div>
         </header>
 
         <section className="border border-blue-500/20 bg-blue-950/10 rounded p-4 md:p-6 mb-5">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-[0.25em]">Quest Grade</p>
-              <p className="font-orbitron text-5xl md:text-7xl font-black text-blue-300 drop-shadow-[0_0_18px_rgba(56,189,248,0.6)]">[{quest.difficulty}]</p>
+              <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-normal">Quest Grade</p>
+              <p className="font-orbitron text-3xl md:text-5xl font-bold text-blue-300 drop-shadow-[0_0_14px_rgba(56,189,248,0.45)]">[{quest.difficulty}]</p>
             </div>
             <div className="text-right">
-              <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-[0.25em]">Reward</p>
-              <p className="font-orbitron text-3xl font-black text-yellow-300">+{rewardXp} XP</p>
-              {rewardCoins > 0 && <p className="text-[10px] text-yellow-400/80 uppercase tracking-widest">{rewardCoins} coins</p>}
+              <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-normal">Reward</p>
+              <p className="font-orbitron text-xl md:text-2xl font-bold text-yellow-300">+{rewardXp} XP</p>
+              {rewardCoins > 0 && <p className="text-[10px] text-yellow-400/80 uppercase tracking-normal">{rewardCoins} coins</p>}
             </div>
           </div>
 
@@ -148,8 +148,9 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
             </div>
           ) : (
             <div className="h-full flex flex-col justify-center text-center py-8">
+              <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal mb-2">{quest.name}</p>
               <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{primaryLabel}</p>
-              <p className="font-orbitron text-6xl md:text-8xl font-black text-white mb-4">
+              <p className="font-orbitron text-4xl md:text-6xl font-bold text-white mb-4">
                 {quest.questMode === 'standard' ? 'READY' : formatDuration(timeLeft)}
               </p>
               {quest.questMode === 'rounds' && (

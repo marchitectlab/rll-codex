@@ -61,6 +61,8 @@ export interface CompletedQuest extends Quest {
   completionId: string;
   earnedXp?: number;
   runStats?: DistanceRunResult;
+  runRoute?: RunRoutePoint[];
+  runRouteImage?: string;
 }
 
 export interface DistanceRunResult {
@@ -74,6 +76,13 @@ export interface DistanceRunResult {
   totalXp: number;
   title: string;
   modifierLabel: string;
+}
+
+export interface RunRoutePoint {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  timestamp: number;
 }
 
 export interface SkillPrerequisite {
@@ -125,6 +134,9 @@ export interface Player {
 export interface DungeonFloor {
     id: string;
     name: string;
+    previewImage?: string;
+    backgroundImage?: string;
+    openingImage?: string;
     tasks: DungeonTask[];
 }
 
@@ -132,6 +144,14 @@ export interface DungeonTask {
     id: string;
     description: string;
     attribute?: Attribute;
+    attributes?: Attribute[];
+    timerSeconds?: number;
+    tracking?: {
+        mode: 'distance';
+        distanceMeters: number;
+        autoComplete?: boolean;
+        maxPaceSecondsPerKm?: number;
+    };
     page: {
         title: string;
         narrative: string;
@@ -143,6 +163,9 @@ export interface Dungeon {
     name: string;
     grade: Difficulty;
     description: string;
+    previewImage?: string;
+    backgroundImage?: string;
+    openingImage?: string;
     type?: 'standard' | 'temptation';
     timeLimit?: number;
     floors: DungeonFloor[];
@@ -188,6 +211,7 @@ export interface ShopItem {
   bonusXp?: number;
   effectDescription: string;
   cost: number;
+  diamondCost?: number;
   // Enhancement stats
   enhancementLevel?: number; // 0-5
   stars?: number; 

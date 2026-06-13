@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Inventory, ShopItem, Difficulty, Player } from '../types';
 import { MATERIALS, ADVANCEMENT_TRAITS, ENHANCEMENT_REQUIREMENT } from '../constants';
+import { getGearFullImage, getGearIcon } from '../lib/gearIcons';
+import { getMaterialIcon, getMaterialName } from '../lib/materialIcons';
 
 interface WorkshopPageProps {
     inventory: Inventory;
@@ -47,6 +49,8 @@ const getAdvancementReqs = (rank: Difficulty) => {
 };
 
 export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance, onAdvance, player }) => {
+    const [previewItem, setPreviewItem] = useState<ShopItem | null>(null);
+    const previewImage = getGearFullImage(previewItem);
     // Collect all gear from storage and active equipment
     const allGear = [
         ...inventory.storage,
@@ -63,6 +67,7 @@ export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance
                 <div className="grid grid-cols-1 gap-4 md:gap-6">
                     {enhanceable.map(item => {
                         const styles = getGradeStyles(item.rank);
+                        const icon = getGearIcon(item);
                         const curStar = item.stars || 0;
                         const maxStars = item.rank === Difficulty.B ? 2 : item.rank === Difficulty.A ? 3 : 5;
                         const isMax = curStar >= maxStars;
@@ -77,7 +82,17 @@ export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance
                         const isEquipped = (Object.values(inventory.equipment) as (ShopItem | null)[]).some(e => e?.id === item.id);
 
                         return (
-                            <div key={item.id} className={`bg-black/60 border rounded p-4 md:p-6 flex flex-col justify-between items-stretch gap-4 md:gap-6 transition-all ${styles.border} ${styles.glow}`}>
+                            <div key={item.id} className={`bg-black/60 border rounded p-4 md:p-6 flex flex-col sm:flex-row justify-between items-stretch gap-4 md:gap-6 transition-all ${styles.border} ${styles.glow}`}>
+                                {icon && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPreviewItem(item)}
+                                        className={`w-20 h-20 md:w-24 md:h-24 flex-shrink-0 rounded-sm overflow-hidden border ${styles.border} bg-black/70 ${styles.bg} hover:scale-105 transition-transform`}
+                                        aria-label={`View ${item.name}`}
+                                    >
+                                        <img src={icon} alt="" className="h-full w-full object-cover" />
+                                    </button>
+                                )}
                                 <div className="flex-grow min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-2 md:mb-3">
                                         <span className={`font-orbitron text-xs md:text-sm font-black ${styles.text}`}>[{item.rank}]</span>
@@ -101,10 +116,12 @@ export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance
                                                     {enhanceReqs.map(r => {
                                                         const count = getMatCount(r.mat);
                                                         const isMet = count >= r.qty;
+                                                        const icon = getMaterialIcon(r.mat);
                                                         return (
                                                             <div key={r.mat} className="flex items-center gap-1.5 md:gap-2">
+                                                                {icon && <img src={icon} alt="" className="h-4 w-4 rounded-sm object-cover border border-white/10 bg-black/70" />}
                                                                 <span className={`text-[9px] md:text-[10px] font-bold ${isMet ? 'text-green-400' : 'text-red-400'}`}>{count}/{r.qty}</span>
-                                                                <span className="text-[8px] md:text-[9px] text-gray-500 uppercase font-black">{r.mat.replace('mat_', '').toUpperCase()}</span>
+                                                                <span className="text-[8px] md:text-[9px] text-gray-500 uppercase font-black">{getMaterialName(r.mat)}</span>
                                                             </div>
                                                         );
                                                     })}
@@ -120,6 +137,7 @@ export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance
                                                     </div>
                                                     {advanceReqs.diamond && (
                                                         <div className="flex items-center gap-1.5 md:gap-2">
+                                                            {getMaterialIcon(MATERIALS.DIAMOND) && <img src={getMaterialIcon(MATERIALS.DIAMOND)!} alt="" className="h-4 w-4 rounded-sm object-cover border border-white/10 bg-black/70" />}
                                                             <span className={`text-[9px] md:text-[10px] font-bold ${getMatCount(MATERIALS.DIAMOND) >= (advanceReqs.diamond || 0) ? 'text-green-400' : 'text-red-400'}`}>{getMatCount(MATERIALS.DIAMOND)}/{advanceReqs.diamond}</span>
                                                             <span className="text-[8px] md:text-[9px] text-gray-500 uppercase font-black">DIAMOND</span>
                                                         </div>
@@ -174,12 +192,27 @@ export const WorkshopPage: React.FC<WorkshopPageProps> = ({ inventory, onEnhance
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
                     {Object.entries(MATERIALS).map(([key, id]) => (
                         <div key={id} className="bg-gray-900/60 p-3 md:p-5 rounded-sm border border-white/5 text-center group hover:border-blue-500/40 transition-colors">
+                            {getMaterialIcon(id) && <img src={getMaterialIcon(id)!} alt="" className="mx-auto mb-2 h-12 w-12 rounded-sm object-cover border border-blue-300/15 bg-black/70" />}
                             <p className="text-[7px] md:text-[9px] text-gray-500 font-black mb-1 md:mb-2 uppercase tracking-widest transition-colors group-hover:text-blue-400 truncate px-1">{key.replace('_', ' ')}</p>
                             <p className="font-orbitron text-2xl md:text-3xl font-black text-blue-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.3)]">{getMatCount(id)}</p>
                         </div>
                     ))}
                 </div>
             </div>
+            {previewItem && previewImage && (
+                <div className="fixed inset-0 z-[450] bg-black/90 backdrop-blur-md flex items-center justify-center p-5" onClick={() => setPreviewItem(null)}>
+                    <div className="w-full max-w-md border border-blue-500/35 bg-slate-950 rounded-sm p-4 shadow-[0_0_35px_rgba(56,189,248,0.18)]" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                                <p className="font-orbitron text-[9px] text-blue-300/70 uppercase tracking-[0.18em]">Gear Preview</p>
+                                <h3 className="font-orbitron text-sm text-white uppercase font-black">{previewItem.name}</h3>
+                            </div>
+                            <button onClick={() => setPreviewItem(null)} className="h-8 w-8 border border-slate-700 rounded-sm text-slate-400 hover:text-white hover:border-blue-400 transition-colors">X</button>
+                        </div>
+                        <img src={previewImage} alt={previewItem.name} className="w-full max-h-[70vh] object-contain rounded-sm bg-black border border-white/10" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

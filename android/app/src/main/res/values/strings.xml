@@ -4,4 +4,6 @@
     <string name="title_activity_main">R.L.L Lite</string>
     <string name="package_name">com.rll.mobile</string>
     <string name="custom_url_scheme">com.rll.mobile</string>
+    <string name="capacitor_background_geolocation_notification_channel_name">Distance Quest Tracking</string>
+    <string name="capacitor_background_geolocation_notification_color">#38bdf8</string>
 </resources>

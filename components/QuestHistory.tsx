@@ -4,6 +4,7 @@ import type { CompletedQuest, DungeonHistoryEntry } from '../types';
 import { Difficulty } from '../types';
 import { XP_PER_DIFFICULTY, DUNGEONS } from '../constants';
 import { formatDistance, formatPace } from '../lib/distanceQuest';
+import { createRouteImage, downloadRouteImage } from '../lib/routeImage';
 
 // --- TYPES & INTERFACES ---
 interface QuestHistoryProps {
@@ -41,8 +42,83 @@ const getXpGrade = (xp: number): Difficulty => {
     return Difficulty.E;
 };
 
+const RoutePreview: React.FC<{ points: NonNullable<CompletedQuest['runRoute']> }> = ({ points }) => {
+    if (points.length < 2) {
+        return <div className="h-48 border border-white/10 bg-slate-950 rounded flex items-center justify-center text-[10px] uppercase tracking-widest text-gray-500">No route points saved</div>;
+    }
+
+    const minLat = Math.min(...points.map(p => p.latitude));
+    const maxLat = Math.max(...points.map(p => p.latitude));
+    const minLon = Math.min(...points.map(p => p.longitude));
+    const maxLon = Math.max(...points.map(p => p.longitude));
+    const latRange = Math.max(0.00001, maxLat - minLat);
+    const lonRange = Math.max(0.00001, maxLon - minLon);
+    const width = 360;
+    const height = 220;
+    const padding = 24;
+    const scale = Math.min((width - padding * 2) / lonRange, (height - padding * 2) / latRange);
+    const routeWidth = lonRange * scale;
+    const routeHeight = latRange * scale;
+    const offsetX = padding + (width - padding * 2 - routeWidth) / 2;
+    const offsetY = padding + (height - padding * 2 - routeHeight) / 2;
+    const path = points.map((point, index) => {
+        const x = offsetX + (point.longitude - minLon) * scale;
+        const y = offsetY + (maxLat - point.latitude) * scale;
+        return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-56 border border-cyan-500/20 bg-slate-950 rounded">
+            <defs>
+                <pattern id="route-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                    <path d="M 28 0 L 0 0 0 28" fill="none" stroke="rgba(56,189,248,0.12)" strokeWidth="1" />
+                </pattern>
+                <filter id="route-glow">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            <rect width={width} height={height} fill="url(#route-grid)" />
+            <path d={path} fill="none" stroke="#22d3ee" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" filter="url(#route-glow)" />
+            <circle cx={offsetX + (points[0].longitude - minLon) * scale} cy={offsetY + (maxLat - points[0].latitude) * scale} r="7" fill="#22c55e" />
+            <circle cx={offsetX + (points[points.length - 1].longitude - minLon) * scale} cy={offsetY + (maxLat - points[points.length - 1].latitude) * scale} r="7" fill="#f43f5e" />
+        </svg>
+    );
+};
+
+const RunDetailPanel: React.FC<{ quest: CompletedQuest }> = ({ quest }) => {
+    if (!quest.runStats) return null;
+    const image = quest.runRouteImage || (quest.runRoute ? createRouteImage(quest.runRoute, quest.runStats, quest.name) : null);
+    return (
+        <div className="border border-cyan-500/25 bg-slate-950/80 rounded p-4 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <p className="font-orbitron text-[9px] text-cyan-300 uppercase tracking-[0.25em]">Run Details</p>
+                    <h3 className="font-orbitron text-lg text-white font-bold uppercase">{quest.name}</h3>
+                </div>
+                <span className="font-orbitron text-2xl text-blue-300 font-black">[{quest.runStats.finalGrade}]</span>
+            </div>
+            {quest.runRoute && <RoutePreview points={quest.runRoute} />}
+            <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-black/40 border border-white/10 rounded p-2"><p className="text-[8px] text-gray-500 uppercase">Distance</p><p className="font-orbitron text-cyan-300 text-sm">{formatDistance(quest.runStats.distanceMeters)}</p></div>
+                <div className="bg-black/40 border border-white/10 rounded p-2"><p className="text-[8px] text-gray-500 uppercase">Pace</p><p className="font-orbitron text-green-300 text-sm">{formatPace(quest.runStats.paceSecondsPerKm)}</p></div>
+                <div className="bg-black/40 border border-white/10 rounded p-2"><p className="text-[8px] text-gray-500 uppercase">XP</p><p className="font-orbitron text-yellow-300 text-sm">+{quest.runStats.totalXp}</p></div>
+            </div>
+            {image && (
+                <button onClick={() => downloadRouteImage(image, `${quest.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-route.png`)} className="w-full font-orbitron bg-cyan-700 hover:bg-cyan-600 text-white px-4 py-3 rounded uppercase text-[10px] font-black tracking-widest border border-cyan-400/50">
+                    Save Route Image
+                </button>
+            )}
+        </div>
+    );
+};
+
 // --- DETAIL MODAL ---
 const HistoryDetailModal: React.FC<{ date: Date; activities: DailyActivity; onClose: () => void }> = ({ date, activities, onClose }) => {
+    const [selectedRun, setSelectedRun] = useState<CompletedQuest | null>(null);
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-gray-800 border-2 border-blue-500/50 rounded-lg shadow-2xl shadow-blue-500/20 w-full max-w-2xl m-4" onClick={e => e.stopPropagation()}>
@@ -54,7 +130,15 @@ const HistoryDetailModal: React.FC<{ date: Date; activities: DailyActivity; onCl
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
                 </div>
                 <div className="p-4 max-h-[60vh] overflow-y-auto space-y-4">
-                    {activities.quests.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Activities Recorded</h3><div className="space-y-2">{activities.quests.map(q => <div key={q.completionId} className={`p-2 bg-gray-900/50 rounded-md text-sm ${q.difficulty === Difficulty.X ? 'border border-red-800' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[q.difficulty].text}`}>[{q.difficulty}]</span>{q.name} - <span className={q.difficulty === Difficulty.X ? 'text-red-500' : 'text-yellow-400'}>{q.difficulty === Difficulty.X ? 'PENALTY APPLIED' : `${q.earnedXp ?? XP_PER_DIFFICULTY[q.difficulty]} XP`}</span>{q.runStats && <div className="mt-1 text-[10px] uppercase tracking-widest text-cyan-300/80">{formatDistance(q.runStats.distanceMeters)} | {formatPace(q.runStats.paceSecondsPerKm)} | {q.runStats.modifierLabel}</div>}</div>)}</div></div>}
+                    {selectedRun && <RunDetailPanel quest={selectedRun} />}
+                    {activities.quests.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Activities Recorded</h3><div className="space-y-2">{activities.quests.map(q => {
+                        const content = <><span className={`font-bold mr-2 ${difficultyStyles[q.difficulty].text}`}>[{q.difficulty}]</span>{q.name} - <span className={q.difficulty === Difficulty.X ? 'text-red-500' : 'text-yellow-400'}>{q.difficulty === Difficulty.X ? 'PENALTY APPLIED' : `${q.earnedXp ?? XP_PER_DIFFICULTY[q.difficulty]} XP`}</span>{q.runStats && <div className="mt-1 text-[10px] uppercase tracking-normal text-cyan-300/80">{formatDistance(q.runStats.distanceMeters)} | {formatPace(q.runStats.paceSecondsPerKm)} | {q.runStats.modifierLabel}</div>}</>;
+                        return q.runStats ? (
+                            <button key={q.completionId} onClick={() => setSelectedRun(q)} className="w-full text-left p-2 bg-gray-900/50 hover:bg-cyan-950/40 rounded-md text-sm border border-cyan-500/20 transition-colors">{content}</button>
+                        ) : (
+                            <div key={q.completionId} className={`p-2 bg-gray-900/50 rounded-md text-sm ${q.difficulty === Difficulty.X ? 'border border-red-800' : ''}`}>{content}</div>
+                        );
+                    })}</div></div>}
                     {activities.dungeons.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Dungeons</h3><div className="space-y-2">{activities.dungeons.map(d => <div key={d.completedAt} className={`p-2 bg-gray-900/50 rounded-md text-sm ${d.status === 'failed' ? 'opacity-60' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[d.grade].text}`}>[{d.grade}]</span>{d.name} - <span className={d.status === 'cleared' ? 'text-green-400' : 'text-red-400'}>{d.status}</span></div>)}</div></div>}
                 </div>
             </div>

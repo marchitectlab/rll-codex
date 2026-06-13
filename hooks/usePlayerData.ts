@@ -1,9 +1,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Player, Quest, Difficulty, PlayerDataState, CompletedQuest, Skill, Attribute, SkillPrerequisite, SkillFolder, SkillCategory, ActiveDungeonState, DungeonCooldown, DungeonHistoryEntry, Inventory, Achievement, ShopItem, EquipmentSlot, PlayerDataEvent, WeeklyPlan, DayOfWeek, PlannerItem, MaterialItem, SystemNotification, DungeonKeys, DistanceRunResult } from '../types';
+import { Player, Quest, Difficulty, PlayerDataState, CompletedQuest, Skill, Attribute, SkillPrerequisite, SkillFolder, SkillCategory, ActiveDungeonState, DungeonCooldown, DungeonHistoryEntry, Inventory, Achievement, ShopItem, EquipmentSlot, PlayerDataEvent, WeeklyPlan, DayOfWeek, PlannerItem, MaterialItem, SystemNotification, DungeonKeys, DistanceRunResult, RunRoutePoint } from '../types';
 import { Rank, Difficulty as DifficultyEnum } from '../types';
 import { XP_PER_DIFFICULTY, getXpToNextLevel, getRankForLevel, TRAINING_PER_HALF_STAR, SKILL_UNLOCK_REQUIREMENTS, XP_FOR_SKILL_UNLOCK, STAT_POINTS_PER_DIFFICULTY, DUNGEONS, SYSTEM_QUESTS, XP_FOR_SKILL_ASCENSION, QUEST_COIN_REWARDS, ACHIEVEMENTS_DATA, MATERIALS, ADVANCEMENT_TRAITS, X_RANK_PENALTY_OVERRIDE, DAILY_XP_GOAL, ENHANCEMENT_REQUIREMENT, getLevelRequirement, DUNGEON_LEVEL_REQUIREMENTS, DUNGEON_KEYS_PER_DAY, DUNGEON_KEYS_PRO_PER_DAY, AD_BONUS_KEYS_PER_DAY } from '../constants';
 import { calculateDistanceQuestResult, formatDistance, formatPace } from '../lib/distanceQuest';
+import { playNotificationSound } from '../lib/notificationSound';
+import { formatDungeonRewardSummary, rollDungeonRewards, type DungeonRewardRoll } from '../lib/dungeonRewards';
 
 const DATA_VERSION = 11;
 const Berserker_GEAR_IDS = ['armor_berserker'];
@@ -80,6 +82,14 @@ const DEFAULT_STATE: PlayerDataState = {
     dungeonKeys: { count: DUNGEON_KEYS_PER_DAY, resetAt: getNextMidnight(), adBonusCount: 0, adBonusResetAt: getNextMidnight(), maxPerDay: DUNGEON_KEYS_PER_DAY },
 };
 
+const mergeSystemQuests = (quests: Quest[] | undefined): Quest[] => {
+    const savedQuests = Array.isArray(quests) ? quests : [];
+    const customQuests = savedQuests.filter(q => !q.isSystemQuest);
+    const savedSystemById = new Map(savedQuests.filter(q => q.isSystemQuest).map(q => [q.id, q]));
+    const systemQuests = SYSTEM_QUESTS.map(quest => ({ ...quest, ...(savedSystemById.get(quest.id) || {}) }));
+    return [...systemQuests, ...customQuests];
+};
+
 const getInitialState = (): PlayerDataState => {
     try {
         const saved = localStorage.getItem('playerData');
@@ -88,7 +98,9 @@ const getInitialState = (): PlayerDataState => {
             const sanitizedInventory: Inventory = {
                 equipment: { ...DEFAULT_STATE.inventory.equipment, ...(parsed.inventory?.equipment || {}) },
                 storage: Array.isArray(parsed.inventory?.storage) ? parsed.inventory.storage : [],
-                materials: Array.isArray(parsed.inventory?.materials) ? parsed.inventory.materials : []
+                materials: Array.isArray(parsed.inventory?.materials)
+                    ? parsed.inventory.materials.filter((m: MaterialItem) => m.id !== 'mat_ruby' && m.id !== 'mat_sapphire')
+                    : []
             };
 
             // Migrate old cooldowns if they exist
@@ -124,7 +136,7 @@ const getInitialState = (): PlayerDataState => {
                 ...DEFAULT_STATE, 
                 ...parsed, 
                 skills: Array.isArray(parsed.skills) ? parsed.skills.map((s: any) => ({ ...s, originalGrade: s.originalGrade || s.grade })) : [],
-                quests: Array.isArray(parsed.quests) ? parsed.quests : DEFAULT_STATE.quests,
+                quests: mergeSystemQuests(parsed.quests),
                 inventory: sanitizedInventory, 
                 dungeonCooldowns,
                 dungeonKeys,
@@ -146,6 +158,7 @@ export const usePlayerData = () => {
 
     const addNotification = useCallback((title: string, message: string, type: SystemNotification['type'] = 'info') => {
         const id = `notif-${Date.now()}-${Math.random()}`;
+        playNotificationSound();
         
         setState(s => ({
             ...s,
@@ -479,7 +492,7 @@ export const usePlayerData = () => {
         setTimeout(() => processingQuests.current.delete(id), 500);
     }, [state.quests, addNotification, gainXp, checkAchievements]);
 
-    const completeDistanceQuest = useCallback((id: string, distanceMeters: number, durationSeconds: number): DistanceRunResult | null => {
+    const completeDistanceQuest = useCallback((id: string, distanceMeters: number, durationSeconds: number, route: RunRoutePoint[] = [], routeImage?: string): DistanceRunResult | null => {
         if (processingQuests.current.has(id)) return null;
 
         const q = state.quests.find(x => x.id === id);
@@ -496,6 +509,8 @@ export const usePlayerData = () => {
             completionId: `run-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             earnedXp: result.totalXp,
             runStats: result,
+            runRoute: route,
+            runRouteImage: routeImage,
         };
         const statPoints = STAT_POINTS_PER_DIFFICULTY[result.finalGrade] || 0;
         const coins = QUEST_COIN_REWARDS[result.finalGrade] || 0;
@@ -634,28 +649,15 @@ export const usePlayerData = () => {
         });
     }, [addNotification]);
 
-    const clearActiveDungeon = useCallback(() => {
+    const clearActiveDungeon = useCallback((rewardRoll?: DungeonRewardRoll) => {
         const activeDungeon = state.activeDungeon;
         if (!activeDungeon) return;
         
         const dungeon = DUNGEONS.find(d => d.id === activeDungeon.dungeonId);
         if (!dungeon) return;
 
-        let coins = 0;
-        const drops: Record<string, number> = {};
-        const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-        
-        if (dungeon.grade === DifficultyEnum.E) coins = rand(3, 8);
-        else if (dungeon.grade === DifficultyEnum.D) coins = rand(5, 15);
-        else if (dungeon.grade === DifficultyEnum.C) { coins = rand(10, 25); drops[MATERIALS.COPPER] = rand(1, 2); drops[MATERIALS.IRON] = rand(1, 2); }
-        else if (dungeon.grade === DifficultyEnum.B) { coins = rand(15, 40); drops[MATERIALS.COPPER] = rand(5, 8); drops[MATERIALS.IRON] = rand(5, 8); drops[MATERIALS.ALUMINIUM] = rand(2, 3); drops[MATERIALS.FANG] = Math.random() > 0.5 ? 1 : 0; }
-        else if (dungeon.grade === DifficultyEnum.A) { coins = rand(50, 100); drops[MATERIALS.COPPER] = rand(5, 10); drops[MATERIALS.IRON] = rand(5, 10); drops[MATERIALS.ALUMINIUM] = rand(5, 8); drops[MATERIALS.FANG] = rand(1, 5); if (Math.random() > 0.7) drops[MATERIALS.DIAMOND] = rand(1, 5); if (Math.random() > 0.9) drops[MATERIALS.SHARD] = rand(1, 2); }
-        else { coins = dungeon.grade === DifficultyEnum.S ? rand(200, 500) : rand(300, 750); drops[MATERIALS.COPPER] = rand(35, 80); drops[MATERIALS.IRON] = rand(35, 80); drops[MATERIALS.ALUMINIUM] = rand(30, 60); drops[MATERIALS.FANG] = rand(25, 55); drops[MATERIALS.DIAMOND] = rand(10, 25); drops[MATERIALS.SHARD] = rand(2, 5); drops[MATERIALS.BLOODSTONE] = rand(0, 3); }
-
-        const dropSummary = Object.entries(drops)
-            .filter(([_, count]) => count > 0)
-            .map(([id, count]) => `${id.replace('mat_', '').replace('_', ' ').toUpperCase()} x${count}`)
-            .join(', ');
+        const { coins, drops } = rewardRoll || rollDungeonRewards(dungeon.grade);
+        const dropSummary = formatDungeonRewardSummary({ coins, drops });
 
         setState(prevState => {
             const newInventoryMaterials = [...prevState.inventory.materials];
@@ -680,7 +682,7 @@ export const usePlayerData = () => {
         gainXp(dungeon.rewards?.xp || 0, `Cleared ${dungeon.name}`, dungeon.grade);
         checkAchievements('CLEAR_DUNGEON', { grade: dungeon.grade });
         addNotification('DUNGEON CLEAR', `${dungeon.name} extraction complete.`, 'info');
-        if (dropSummary) addNotification('LOOT ACQUIRED', dropSummary, 'success');
+        addNotification('LOOT ACQUIRED', dropSummary, 'success');
     }, [state.activeDungeon, addNotification, gainXp, checkAchievements]);
 
     const failActiveDungeon = useCallback(() => {
@@ -714,8 +716,14 @@ export const usePlayerData = () => {
                 return s;
             }
 
-            if (s.player.shopCoins >= item.cost) {
-                const newInventory = { ...s.inventory, storage: [...s.inventory.storage, item] };
+            const diamondCost = item.diamondCost || 0;
+            const diamondCount = s.inventory.materials.find(m => m.id === MATERIALS.DIAMOND)?.count || 0;
+
+            if (s.player.shopCoins >= item.cost && diamondCount >= diamondCost) {
+                const newMaterials = diamondCost > 0
+                    ? s.inventory.materials.map(m => m.id === MATERIALS.DIAMOND ? { ...m, count: m.count - diamondCost } : m)
+                    : s.inventory.materials;
+                const newInventory = { ...s.inventory, storage: [...s.inventory.storage, item], materials: newMaterials };
                 const newState = { ...s, player: { ...s.player, shopCoins: s.player.shopCoins - item.cost }, inventory: newInventory };
                 
                 setTimeout(() => { 
@@ -725,7 +733,7 @@ export const usePlayerData = () => {
                 
                 return newState;
             }
-            addNotification('INSUFFICIENT COINS', 'Access denied.', 'danger');
+            addNotification('INSUFFICIENT RESOURCES', 'Access denied.', 'danger');
             return s;
         });
     }, [addNotification, checkOwnershipAchievements]);
@@ -1128,10 +1136,7 @@ export const usePlayerData = () => {
         try {
             const parsed = JSON.parse(json);
             if (parsed.player) {
-                const questsWithSystem = [...parsed.quests];
-                if (!questsWithSystem.some(q => q.id === 'sys_x_01')) {
-                    questsWithSystem.push(SYSTEM_QUESTS.find(q => q.id === 'sys_x_01')!);
-                }
+                const questsWithSystem = mergeSystemQuests(parsed.quests);
                 setState({ ...parsed, quests: questsWithSystem, notifications: [], events: [] });
                 addNotification('RESTORE SUCCESS', 'System state synchronized.', 'success');
             }

@@ -8,7 +8,7 @@
     <title>Real Life Leveling</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
       * { touch-action: manipulation; }
       html {
@@ -21,13 +21,13 @@
         letter-spacing: 0;
       }
       .font-orbitron {
-        font-family: 'Orbitron', sans-serif;
+        font-family: 'Oxanium', sans-serif;
       }
       .font-system-mono {
         font-family: 'Share Tech Mono', monospace;
       }
       h1, h2, h3, .font-orbitron {
-        letter-spacing: 0.08em;
+        letter-spacing: 0.02em;
       }
       button, input, select, textarea {
         font-family: inherit;
@@ -84,6 +84,23 @@
       .animate-float-up {
         animation: floatUp 2s ease-out forwards;
       }
+      @keyframes lootCrateOpen {
+        0% { transform: translateY(0) scale(1); filter: brightness(1); }
+        38% { transform: translateY(-7px) scale(1.04); filter: brightness(1.35); }
+        100% { transform: translateY(0) scale(1); filter: brightness(1.05); }
+      }
+      @keyframes lootRewardFloat {
+        0% { opacity: 0; transform: translate(-50%, 0) scale(0.55) rotate(-8deg); }
+        18% { opacity: 1; }
+        72% { opacity: 1; transform: translate(calc(-50% + var(--loot-x, 0px)), -82px) scale(1.05) rotate(8deg); }
+        100% { opacity: 0; transform: translate(calc(-50% + var(--loot-x, 0px)), -92px) scale(0.98) rotate(8deg); }
+      }
+      .loot-crate-open {
+        animation: lootCrateOpen 0.85s ease-out both;
+      }
+      .loot-reward-float {
+        animation: lootRewardFloat 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
       .floating-text {
         position: fixed;
         left: 50%;
@@ -94,6 +111,30 @@
         text-shadow: 0 0 10px currentColor;
         pointer-events: none;
         z-index: 100;
+      }
+      .run-map-modern .leaflet-control-zoom {
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+        border-radius: 2px !important;
+        overflow: hidden;
+        box-shadow: 0 0 18px rgba(14, 165, 233, 0.12);
+      }
+      .run-map-modern .leaflet-control-zoom a {
+        width: 34px !important;
+        height: 34px !important;
+        line-height: 34px !important;
+        background: rgba(2, 6, 23, 0.86) !important;
+        color: #bfdbfe !important;
+        border-color: rgba(56, 189, 248, 0.18) !important;
+        font-family: 'Oxanium', sans-serif;
+      }
+      .run-map-modern .leaflet-control-attribution {
+        background: rgba(2, 6, 23, 0.62) !important;
+        color: rgba(203, 213, 225, 0.55) !important;
+        border-top: 1px solid rgba(56, 189, 248, 0.14);
+        font-size: 9px;
+      }
+      .run-map-modern .leaflet-control-attribution a {
+        color: rgba(125, 211, 252, 0.7) !important;
       }
       @keyframes achievement-fade-in {
         from { opacity: 0; transform: scale(0.8); }

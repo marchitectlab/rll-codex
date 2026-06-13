@@ -9,6 +9,7 @@ interface AuthPageProps {
   loading: boolean;
   error: string | null;
   onClearError: () => void;
+  onBack?: () => void;
 }
 
 const EyeIcon = ({ open }: { open: boolean }) => (
@@ -25,7 +26,7 @@ const EyeIcon = ({ open }: { open: boolean }) => (
 );
 
 export const AuthPage: React.FC<AuthPageProps> = ({
-  onSignIn, onSignUp, onForgotPassword, loading, error, onClearError
+  onSignIn, onSignUp, onForgotPassword, loading, error, onClearError, onBack
 }) => {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -84,6 +85,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({
       }}
     >
       <div className="absolute inset-0 pointer-events-none opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-5 left-4 z-20 w-10 h-10 rounded-full border border-blue-500/30 bg-slate-950/70 text-blue-200 hover:text-white hover:border-blue-400/70 flex items-center justify-center transition-colors"
+          aria-label="Back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
 
       <div className="text-center mb-10 relative z-10">
         <h1
