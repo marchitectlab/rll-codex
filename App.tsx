@@ -1520,6 +1520,22 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
         setShowUpgradePro(true);
     }, []);
 
+    const handleSyncToCloud = useCallback(async () => {
+        if (!userId) {
+            setShowAuthModal(true);
+            return false;
+        }
+        return data.syncToCloud(userId);
+    }, [data, userId]);
+
+    const handleSyncFromCloud = useCallback(async () => {
+        if (!userId) {
+            setShowAuthModal(true);
+            return false;
+        }
+        return data.syncFromCloud(userId);
+    }, [data, userId]);
+
     const nav = [
         { id: 'status', label: 'STATUS', icon: <StatusIcon /> },
         { id: 'quests', label: 'QUESTS', icon: <QuestLogIcon /> },
@@ -1566,7 +1582,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             case 'workshop': return <WorkshopPage inventory={data.inventory} onEnhance={data.enhanceGear} onAdvance={data.advanceGear} player={data.player} />;
             case 'shop': return <ShopPage player={data.player} inventory={data.inventory} onBuyItem={i => setConfirm({ title: 'System Exchange', message: `Authorize exchange for ${i.name}? Cost: ${i.cost} coins${i.diamondCost ? ` + ${i.diamondCost} diamonds` : ''}.`, onConfirm: () => data.buyItem(i) })} />;
             case 'inventory': return <InventoryPageWrapper inventory={data.inventory} player={data.player} onEquip={data.equipItem} onUnequip={data.unequipItem} onBreak={slot => setConfirm({ title: 'Break Curse', message: 'Permanently destroy cursed equipment using Light Orb?', isDangerous: true, onConfirm: () => data.breakGear(slot) })} />;
-            case 'settings': return <SettingsPage userEmail={userEmail} isPro={isPro} appVersion={APP_VERSION} onLoginPress={() => setShowAuthModal(true)} onSignOut={handleSignOut} onExport={data.exportState} onImport={data.importState} />;
+            case 'settings': return <SettingsPage userEmail={userEmail} isPro={isPro} appVersion={APP_VERSION} onLoginPress={() => setShowAuthModal(true)} onSignOut={handleSignOut} onExport={data.exportState} onImport={data.importState} onSyncToCloud={handleSyncToCloud} onSyncFromCloud={handleSyncFromCloud} />;
             case 'codex': return <Codex onOpenExport={data.exportState} onOpenImport={data.importState} onSetBackground={() => {}} background={null} onNavigateToReport={() => navigateTo('report')} />;
             case 'report': return <ReportExport player={data.player} completedQuests={data.completedQuests} dungeonHistory={data.dungeonHistory} achievements={data.achievements} inventory={data.inventory} onUpgradePro={() => handleShowUpgrade('System Reports')} isPro={isPro} />;
             default: return null;

@@ -6,6 +6,7 @@ import { XP_PER_DIFFICULTY, getXpToNextLevel, getRankForLevel, TRAINING_PER_HALF
 import { calculateDistanceQuestResult, formatDistance, formatPace } from '../lib/distanceQuest';
 import { playNotificationSound } from '../lib/notificationSound';
 import { formatDungeonRewardSummary, rollDungeonRewards, type DungeonRewardRoll } from '../lib/dungeonRewards';
+import { supabase } from '../lib/supabase';
 
 const DATA_VERSION = 11;
 const Berserker_GEAR_IDS = ['armor_berserker'];
@@ -1165,7 +1166,7 @@ export const usePlayerData = () => {
         setTimeout(() => processingQuests.current.delete(id), 500);
     }, [state.quests, addNotification, gainXp]);
 
-    const exportState = useCallback(async () => {
+    const exportState = useCallback(async (mode: 'share' | 'download' = 'share') => {
         const fileName = `rll_backup_${new Date().toISOString().split('T')[0]}.json`;
         const fileContent = JSON.stringify(state, null, 2);
         const isNative = (window as any).Capacitor?.isNativePlatform();
@@ -1173,15 +1174,20 @@ export const usePlayerData = () => {
         if (isNative) {
             try {
                 const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
-                const { Share } = await import('@capacitor/share');
+                const targetDirectory = mode === 'download' ? Directory.Documents : Directory.Cache;
                 await Filesystem.writeFile({
                     path: fileName,
                     data: fileContent,
-                    directory: Directory.Cache,
+                    directory: targetDirectory,
                     encoding: Encoding.UTF8,
                 });
+                if (mode === 'download') {
+                    addNotification('BACKUP DOWNLOADED', `Saved ${fileName} to Documents.`, 'success');
+                    return;
+                }
+                const { Share } = await import('@capacitor/share');
                 const fileUri = await Filesystem.getUri({
-                    directory: Directory.Cache,
+                    directory: targetDirectory,
                     path: fileName,
                 });
                 await Share.share({
@@ -1217,6 +1223,59 @@ export const usePlayerData = () => {
             }
         } catch (e) {
             addNotification('RESTORE FAILED', 'Data corruption detected.', 'danger');
+        }
+    }, [addNotification]);
+
+    const syncToCloud = useCallback(async (userId: string) => {
+        try {
+            const payload = { ...state, events: [], notifications: [] };
+            const { error } = await supabase
+                .from('player_saves')
+                .upsert({
+                    user_id: userId,
+                    data: payload,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+
+            if (error) throw error;
+            addNotification('CLOUD SYNC COMPLETE', 'Progress saved to your account.', 'success');
+            return true;
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Cloud save failed.';
+            addNotification('CLOUD SYNC FAILED', message, 'danger');
+            return false;
+        }
+    }, [state, addNotification]);
+
+    const syncFromCloud = useCallback(async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('player_saves')
+                .select('data, updated_at')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (!data?.data) {
+                addNotification('NO CLOUD SAVE', 'No account save was found.', 'warning');
+                return false;
+            }
+
+            const cloudState = data.data as PlayerDataState;
+            setState({
+                ...DEFAULT_STATE,
+                ...cloudState,
+                quests: mergeSystemQuests(cloudState.quests),
+                notifications: [],
+                events: [],
+                dataVersion: DATA_VERSION,
+            });
+            addNotification('CLOUD RESTORE COMPLETE', 'Progress restored from your account.', 'success');
+            return true;
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Cloud restore failed.';
+            addNotification('CLOUD RESTORE FAILED', message, 'danger');
+            return false;
         }
     }, [addNotification]);
 
@@ -1282,7 +1341,7 @@ export const usePlayerData = () => {
                 return { ...s, inventory: newInventory };
             });
         }, 
-        clearEvents, addEvent, importState, exportState, addNotification, addSkill, 
+        clearEvents, addEvent, importState, exportState, syncToCloud, syncFromCloud, addNotification, addSkill, 
         deleteSkill: (id: string) => { setState(s => ({ ...s, skills: s.skills.filter(sk => sk.id !== id) })); addNotification('SKILL ERASED', 'Purged from database.', 'warning'); }, 
         addSkillFolder: (name: string, category: string, icon: string) => {
             const id = `sf-${Date.now()}`;

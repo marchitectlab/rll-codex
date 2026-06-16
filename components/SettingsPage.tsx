@@ -6,8 +6,10 @@ interface SettingsPageProps {
   appVersion: string;
   onLoginPress: () => void;
   onSignOut: () => void;
-  onExport: () => void;
+  onExport: (mode?: 'share' | 'download') => void;
   onImport: (json: string) => void;
+  onSyncToCloud: () => Promise<boolean>;
+  onSyncFromCloud: () => Promise<boolean>;
 }
 
 const APP_BUILD = 'Lite';
@@ -65,8 +67,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onSignOut,
   onExport,
   onImport,
+  onSyncToCloud,
+  onSyncFromCloud,
 }) => {
   const linked = !!userEmail;
+  const [syncing, setSyncing] = React.useState<'up' | 'down' | null>(null);
+
+  const runSync = async (direction: 'up' | 'down') => {
+    if (!linked || syncing) return;
+    setSyncing(direction);
+    try {
+      if (direction === 'up') await onSyncToCloud();
+      else await onSyncFromCloud();
+    } finally {
+      setSyncing(null);
+    }
+  };
 
   return (
     <div className="space-y-5 pb-24 lg:pb-0">
@@ -114,21 +130,24 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               <span className="font-orbitron text-[9px] text-gray-500 uppercase tracking-widest">Supabase</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button disabled className="font-orbitron bg-blue-900/30 text-blue-300/40 px-3 py-3 rounded text-[9px] font-black uppercase tracking-widest border border-blue-500/10 cursor-not-allowed">
-                Sync To Account
+              <button onClick={() => runSync('up')} disabled={!linked || !!syncing} className={`font-orbitron px-3 py-3 rounded text-[9px] font-black uppercase tracking-widest border transition-all ${linked ? 'bg-blue-700 hover:bg-blue-600 text-white border-blue-400/40 disabled:opacity-50' : 'bg-blue-900/30 text-blue-300/40 border-blue-500/10 cursor-not-allowed'}`}>
+                {syncing === 'up' ? 'Syncing...' : 'Sync To Account'}
               </button>
-              <button disabled className="font-orbitron bg-blue-900/30 text-blue-300/40 px-3 py-3 rounded text-[9px] font-black uppercase tracking-widest border border-blue-500/10 cursor-not-allowed">
-                Sync From Account
+              <button onClick={() => runSync('down')} disabled={!linked || !!syncing} className={`font-orbitron px-3 py-3 rounded text-[9px] font-black uppercase tracking-widest border transition-all ${linked ? 'bg-cyan-700 hover:bg-cyan-600 text-white border-cyan-400/40 disabled:opacity-50' : 'bg-blue-900/30 text-blue-300/40 border-blue-500/10 cursor-not-allowed'}`}>
+                {syncing === 'down' ? 'Syncing...' : 'Sync From Account'}
               </button>
             </div>
-            <p className="text-[10px] text-gray-600 uppercase tracking-widest">Cloud save module pending.</p>
+            <p className="text-[10px] text-gray-600 uppercase tracking-widest">Uses Supabase account cloud save.</p>
           </div>
         </SettingPanel>
 
         <SettingPanel eyebrow="Backup" title="Local Data">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button onClick={onExport} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-4 py-3 rounded text-[10px] font-black uppercase tracking-widest border border-blue-400/40 transition-all">
-              Sync To File
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button onClick={() => onExport('share')} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-4 py-3 rounded text-[10px] font-black uppercase tracking-widest border border-blue-400/40 transition-all">
+              Share Backup
+            </button>
+            <button onClick={() => onExport('download')} className="font-orbitron bg-cyan-700 hover:bg-cyan-600 text-white px-4 py-3 rounded text-[10px] font-black uppercase tracking-widest border border-cyan-400/40 transition-all">
+              Download
             </button>
             <ImportDataButton onImport={onImport} />
           </div>

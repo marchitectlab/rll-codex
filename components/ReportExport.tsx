@@ -83,7 +83,7 @@ export const ReportExport: React.FC<ReportExportProps> = ({ player, completedQue
         return { quests, dungeons, totalXp };
     };
 
-    const drawReport = async () => {
+    const drawReport = async (mode: 'share' | 'download') => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         setIsGenerating(true);
@@ -280,15 +280,17 @@ export const ReportExport: React.FC<ReportExportProps> = ({ player, completedQue
         if (isNative) {
             try {
                 const { Filesystem, Directory } = await import('@capacitor/filesystem');
-                const { Share } = await import('@capacitor/share');
                 const base64Data = dataURL.split(',')[1];
+                const targetDirectory = mode === 'download' ? Directory.Documents : Directory.Cache;
                 await Filesystem.writeFile({
                     path: fileName,
                     data: base64Data,
-                    directory: Directory.Cache,
+                    directory: targetDirectory,
                 });
+                if (mode === 'download') return;
+                const { Share } = await import('@capacitor/share');
                 const fileUri = await Filesystem.getUri({
-                    directory: Directory.Cache,
+                    directory: targetDirectory,
                     path: fileName,
                 });
                 await Share.share({
@@ -309,9 +311,9 @@ export const ReportExport: React.FC<ReportExportProps> = ({ player, completedQue
         setIsGenerating(false);
     };
 
-    const handleRenderClick = () => {
+    const handleRenderClick = (mode: 'share' | 'download') => {
         if (isPro) {
-            drawReport();
+            drawReport(mode);
         } else {
             onUpgradePro();
         }
@@ -349,11 +351,18 @@ export const ReportExport: React.FC<ReportExportProps> = ({ player, completedQue
                 <div className="flex flex-col justify-center items-center p-8 bg-slate-950/40 rounded-sm border border-slate-800 text-center">
                     <div className="space-y-3 w-full">
                         <button
-                            onClick={handleRenderClick}
+                            onClick={() => handleRenderClick('share')}
                             disabled={isGenerating}
                             className="w-full font-orbitron bg-blue-700/80 text-white py-5 rounded-sm uppercase font-black text-xs tracking-[0.4em] hover:bg-blue-600 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] transition-all border border-blue-400/30 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isGenerating ? '⟳ RENDERING...' : 'INITIATE RENDER'}
+                        </button>
+                        <button
+                            onClick={() => handleRenderClick('download')}
+                            disabled={isGenerating}
+                            className="w-full font-orbitron bg-cyan-700/80 text-white py-4 rounded-sm uppercase font-black text-xs tracking-[0.3em] hover:bg-cyan-600 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all border border-cyan-400/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            Download
                         </button>
                         {!isPro && (
                             <div className="flex items-center justify-center gap-2 text-[9px] font-orbitron font-black text-yellow-500/60 uppercase tracking-widest">
