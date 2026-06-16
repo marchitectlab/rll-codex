@@ -555,162 +555,129 @@ export const DUNGEONS: Dungeon[] = [
         rewards: { xp: 40, coins: QUEST_COIN_REWARDS[Difficulty.B] },
         failurePenalty: { xp: 40 }
     },
+    { 
+        id: 'dungeon_b_03', 
+        name: 'Land of Frost', 
+        grade: Difficulty.B, 
+        type: 'standard',
+        description: 'An ice dungeon covered in blue mist, frost crystals, and hunting ice wolves.', 
+        previewImage: '/dungeons/dungeon_b_03.png',
+        backgroundImage: '/dungeons/dungeon_b_03.png',
+        openingImage: '/dungeons/dungeon_b_03.png',
+        timeLimit: 900,
+        floors: [
+            {
+                id: 'f1',
+                name: 'Frosty Entrance',
+                backgroundImage: '/dungeons/dungeon_b_03.png',
+                openingImage: '/dungeons/dungeon_b_03.png',
+                tasks: [
+                    {
+                        id: 't1',
+                        description: '30 jumping jacks warm up',
+                        attributes: [Attribute.Agility, Attribute.Endurance],
+                        page: { title: 'Task 1: Warm Up', narrative: 'Blue ice mist rolls through the gate. Raise your body temperature before the frost locks your joints.' }
+                    },
+                    {
+                        id: 't2',
+                        description: 'Walk 100m and explore the dungeon',
+                        tracking: { mode: 'distance', distanceMeters: 100, autoComplete: true },
+                        attribute: Attribute.Endurance,
+                        page: { title: 'Task 2: Explore the Frost', narrative: 'Snow hides the path ahead. Move carefully through the frozen entrance.' }
+                    }
+                ]
+            },
+            {
+                id: 'f2',
+                name: 'Ice Wolves Chase',
+                backgroundImage: '/dungeons/dungeon_b_03_floor_2.png',
+                openingImage: '/dungeons/dungeon_b_03_floor_2.png',
+                tasks: [{
+                    id: 't3',
+                    description: 'Run 500m',
+                    tracking: { mode: 'distance', distanceMeters: 500, autoComplete: true },
+                    attributes: [Attribute.Agility, Attribute.Endurance],
+                    page: { title: 'Task 3: Run 500m', narrative: 'Ice wolves burst from the ruins behind you. Keep moving until the pack falls back.' }
+                }]
+            },
+            {
+                id: 'f3',
+                name: 'Face Off',
+                backgroundImage: '/dungeons/dungeon_b_03_floor_3.png',
+                openingImage: '/dungeons/dungeon_b_03_floor_3.png',
+                tasks: [{
+                    id: 't4',
+                    description: '40 push ups',
+                    attribute: Attribute.Strength,
+                    page: { title: 'Task 4: Defeat the Ice Wolves', narrative: 'The pack surrounds you in the frozen clearing. Push through and break their charge.' }
+                }]
+            }
+        ],
+        rewards: { xp: 45, coins: QUEST_COIN_REWARDS[Difficulty.B] },
+        failurePenalty: { xp: 45 }
+    },
+    { 
+        id: 'dungeon_b_04', 
+        name: 'The Disaster', 
+        grade: Difficulty.B, 
+        type: 'standard',
+        description: 'A tower dungeon filled with wind, lightning, floating platforms, and unstable stairs.', 
+        previewImage: '/dungeons/dungeon_b_04.png',
+        backgroundImage: '/dungeons/dungeon_b_04.png',
+        openingImage: '/dungeons/dungeon_b_04.png',
+        timeLimit: 300,
+        floors: [
+            {
+                id: 'f1',
+                name: 'Stairs',
+                backgroundImage: '/dungeons/dungeon_b_04.png',
+                openingImage: '/dungeons/dungeon_b_04.png',
+                tasks: [{
+                    id: 't1',
+                    description: 'Climb 4 floors',
+                    attributes: [Attribute.Strength, Attribute.Endurance],
+                    page: { title: 'Task 1: Climb 4 Floors', narrative: 'The spiral stairs split apart while lightning tears across the tower walls. Water rises around your feet.' }
+                }]
+            },
+            {
+                id: 'f2',
+                name: 'Wind Trial',
+                backgroundImage: '/dungeons/dungeon_b_04_floor_02.png',
+                openingImage: '/dungeons/dungeon_b_04_floor_02.png',
+                tasks: [{
+                    id: 't2',
+                    description: 'Plank for 2:30',
+                    timerSeconds: 150,
+                    attributes: [Attribute.Strength, Attribute.Endurance],
+                    page: { title: 'Task 2: Hold Against the Wind', narrative: 'Floating stone platforms shake in violent wind currents. Hold position until the trial ends.' }
+                }]
+            }
+        ],
+        rewards: { xp: 45, coins: QUEST_COIN_REWARDS[Difficulty.B] },
+        failurePenalty: { xp: 45 }
+    },
     // --- A-RANK ---
     { 
         id: 'dungeon_a_01', 
-        name: 'Mystery of Miracle', 
+        name: 'Demon Castle', 
         grade: Difficulty.A, 
-        description: 'Escaping toxic fog in a damp cave.', 
-        previewImage: '/dungeons/dungeon_a_01.jpg',
-        backgroundImage: '/dungeons/dungeon_a_01.jpg',
-        openingImage: '/dungeons/dungeon_a_01.jpg',
+        type: 'standard',
+        description: 'A high-rank fortress guarded by demon knights, hounds, red magic, and the Demon King.', 
+        previewImage: '/dungeons/dungeon_a_01.png',
+        backgroundImage: '/dungeons/dungeon_a_01.png',
+        openingImage: '/dungeons/dungeon_a_01.png',
         floors: [
-            { id: 'f1', name: 'Mist Entry', tasks: [{ id: 't1', description: 'plank 2 minutes', page: { title: 'Holding Breath', narrative: 'The air turns thick...' }}]},
-            { id: 'f2', name: 'Poison Path', tasks: [{ id: 't2', description: '30 Squats', page: { title: 'Swift Move', narrative: 'Vapors rise...' }}]},
-            { id: 'f3', name: 'The Core', tasks: [{ id: 't3', description: '30 push ups ', page: { title: 'The Escape', narrative: 'I can see the light...' }}]}
+            { id: 'f1', name: 'Castle Entrance', backgroundImage: '/dungeons/dungeon_a_01.png', openingImage: '/dungeons/dungeon_a_01.png', tasks: [{ id: 't1', description: 'Walk 150m', tracking: { mode: 'distance', distanceMeters: 150, autoComplete: true }, attribute: Attribute.Endurance, page: { title: 'Task 1: Enter the Castle', narrative: 'A black-red fortress gate rises ahead, bound by chains and crimson runes.' }}]},
+            { id: 'f2', name: 'Cursed Knight Hall', backgroundImage: '/dungeons/dungeon_a_01_floor_02.png', openingImage: '/dungeons/dungeon_a_01_floor_02.png', tasks: [{ id: 't2', description: '50 push ups', attribute: Attribute.Strength, page: { title: 'Task 2: Break the Knight Hall', narrative: 'Crimson armored demon knights rise across the gothic hallway as you cross the gate.' }}]},
+            { id: 'f3', name: 'Demon Hounds', backgroundImage: '/dungeons/dungeon_a_01_floor_03.png', openingImage: '/dungeons/dungeon_a_01_floor_03.png', tasks: [{ id: 't3', description: 'Run 500m within 3 minutes', tracking: { mode: 'distance', distanceMeters: 500, autoComplete: true, maxPaceSecondsPerKm: 360 }, attributes: [Attribute.Agility, Attribute.Endurance], page: { title: 'Task 3: Run 500m', narrative: 'The knights fall, and a pack of demon hounds charges through the smoke.' }}]},
+            { id: 'f4', name: 'Demon Sorcerer', backgroundImage: '/dungeons/dungeon_a_01_floor_04.png', openingImage: '/dungeons/dungeon_a_01_floor_04.png', tasks: [{ id: 't4', description: '30 burpees', attributes: [Attribute.Strength, Attribute.Endurance], page: { title: 'Task 4: Break the Spell', narrative: 'A demon sorcerer floats above with a glowing grimoire, launching red magic while hounds rush below.' }}]},
+            { id: 'f5', name: 'Demon King', backgroundImage: '/dungeons/dungeon_a_01_floor_05.png', openingImage: '/dungeons/dungeon_a_01_floor_05.png', tasks: [{ id: 't5', description: 'Walk 50m toward the throne', tracking: { mode: 'distance', distanceMeters: 50, autoComplete: true }, attribute: Attribute.Endurance, page: { title: 'Task 5: Approach the Throne', narrative: 'The Demon King sits with one leg raised, chin resting on his fist, waiting for you to step closer.' }}]},
+            { id: 'f6', name: 'Demon King: Blood Rain', backgroundImage: '/dungeons/dungeon_a_01_floor_5.1.png', openingImage: '/dungeons/dungeon_a_01_floor_5.1.png', tasks: [{ id: 't6', description: 'Run 250m', tracking: { mode: 'distance', distanceMeters: 250, autoComplete: true }, attributes: [Attribute.Agility, Attribute.Endurance], page: { title: 'Task 6: Run 250m', narrative: 'The Demon King points his sword at you and crimson blades rain from above.' }}]},
+            { id: 'f7', name: 'Demon King: Vanishing Strike', backgroundImage: '/dungeons/dungeon_a_01_floor_5.2.png', openingImage: '/dungeons/dungeon_a_01_floor_5.2.png', tasks: [{ id: 't7', description: '30 jumping squats', attributes: [Attribute.Strength, Attribute.Agility], page: { title: 'Task 7: Dodge and Survive', narrative: 'The throne empties in a burst of smoke. In a blink, the Demon King strikes from point-blank range.' }}]},
+            { id: 'f8', name: 'Demon King: Final Clash', backgroundImage: '/dungeons/dungeon_a_01_floor_5.3.png', openingImage: '/dungeons/dungeon_a_01_floor_5.3.png', tasks: [{ id: 't8', description: '50 push ups', attribute: Attribute.Strength, page: { title: 'Task 8: Defeat the Demon King', narrative: 'Blood-red magic fills the air as the Demon King swings again. Finish the battle.' }}]},
         ],
-        rewards: { xp: 75 },
+        rewards: { xp: 100, coins: QUEST_COIN_REWARDS[Difficulty.A] },
         failurePenalty: { xp: 100 }
-    },
-    { 
-        id: 'dungeon_a_02', 
-        name: 'Orc Attack', 
-        grade: Difficulty.A, 
-        description: 'Defeat all the Orcs in the dungeon.', 
-        previewImage: '/dungeons/dungeon_a_02.jpg',
-        backgroundImage: '/dungeons/dungeon_a_02.jpg',
-        openingImage: '/dungeons/dungeon_a_02.jpg',
-        floors: [
-            { id: 'f1', name: 'Orc Goons', tasks: [{ id: 't1', description: 'shadow box 3 minutes 5 rounds', page: { title: '3 groups of Orcs attacks', narrative: 'ambushed...' }}]},
-            { id: 'f2', name: 'High Orcs', tasks: [{ id: 't2', description: 'weighted shadow boxing 3mins 3 rounds', page: { title: 'tough situatiom', narrative: 'in a pinch...' }}]},
-            { id: 'f3', name: 'Orc Leader', tasks: [{ id: 't3', description: 'heavy bag 3 minutes 5 rounds', page: { title: 'The head Orc', narrative: 'kill...' }}]}
-        ],
-        rewards: { xp: 225 },
-        failurePenalty: { xp: 250 }
-    },
-    { 
-        id: 'dungeon_a_03', 
-        name: 'The Volcano\'s Core', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'The ground rumbles as you descend into a volcano. The air is scorching, and the floor is unstable. You must reach the summit and escape before it erupts.', 
-        previewImage: '/dungeons/dungeon_a_03.jpg',
-        backgroundImage: '/dungeons/dungeon_a_03.jpg',
-        openingImage: '/dungeons/dungeon_a_03.jpg',
-        timeLimit: 900, 
-        floors: [
-            { id: 'f1', name: 'The Slopes', tasks: [{ id: 't1', description: 'Perform 50 jumping lunges to scale the slippery incline.', attribute: Attribute.Strength, page: { title: 'Task 1: The Ascent', narrative: 'The volcano\'s slope is steep and covered in treacherous ash.' }}]},
-            { id: 'f2', name: 'Steam Field', tasks: [{ id: 't2', description: 'Perform 30 squat jumps to evade the scalding steam.', attribute: Attribute.Agility, page: { title: 'Task 2: Steam Vents', narrative: 'The path is riddled with superheated steam vents.' }}]},
-            { id: 'f3', name: 'The Summit', tasks: [{ id: 't3', description: 'Sprint for 30 seconds without stopping to outrun the pyroclastic flow.', attribute: Attribute.Agility, page: { title: 'Task 3: The Summit Sprint', narrative: 'The volcano has begun its final eruption!' }}]}
-        ],
-        rewards: { xp: 75, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 50 }
-    },
-    { 
-        id: 'dungeon_a_04', 
-        name: 'The Assassin\'s Gauntlet', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'You\'ve been dropped into an assassin\'s training gauntlet. Traps are everywhere. Your only hope is to move with inhuman speed and agility.', 
-        previewImage: '/dungeons/dungeon_a_04.jpg',
-        backgroundImage: '/dungeons/dungeon_a_04.jpg',
-        openingImage: '/dungeons/dungeon_a_04.jpg',
-        timeLimit: 720, 
-        floors: [
-            { id: 'f1', name: 'Hall of Blades', tasks: [{ id: 't1', description: '3 minutes of high-intensity shadow boxing to disarm pressure plates', attribute: Attribute.Agility, page: { title: 'Task 1: The Hall of Blades', narrative: 'The floor is a tapestry of pressure plates.' }}]},
-            { id: 'f2', name: 'Laser Path', tasks: [{ id: 't2', description: 'Perform 60 seconds of high knees to leap over tripwires', attribute: Attribute.Agility, page: { title: 'Task 2: The Razor Wire', narrative: 'Gleaming wires are strung at shin-height.' }}]},
-            { id: 'f3', name: 'Final Chasm', tasks: [{ id: 't3', description: '30 squat jumps to clear a chasm', attribute: Attribute.Strength, page: { title: 'Task 3: The Leap of Faith', narrative: 'The final obstacle is a chasm.' }}]}
-        ],
-        rewards: { xp: 80, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 55 }
-    },
-    { 
-        id: 'dungeon_a_05', 
-        name: 'The Wyrm\'s Breath', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'A great wyrm guards the path. It unleashes a torrent of fire, forcing you to constantly move. This is a pure test of agility and stamina.', 
-        previewImage: '/dungeons/dungeon_a_05.jpg',
-        backgroundImage: '/dungeons/dungeon_a_05.jpg',
-        openingImage: '/dungeons/dungeon_a_05.jpg',
-        timeLimit: 600, 
-        floors: [
-            { id: 'f1', name: 'The Scorched Path', tasks: [{ id: 't1', description: 'Complete 3 rounds of: 10 burpees, 20 mountain climbers.', attribute: Attribute.Agility, page: { title: 'Task 1: The First Salvo', narrative: 'The wyrm unleashes its first wave of fire.' }}]},
-            { id: 'f2', name: 'The Inferno', tasks: [{ id: 't2', description: 'Complete 3 rounds of: 15 jumping squats, 10 push-ups.', attribute: Attribute.Agility, page: { title: 'Task 2: The Inferno', narrative: 'Angered, the wyrm floods the area with fire.' }}]},
-            { id: 'f3', name: 'The Final Breach', tasks: [{ id: 't3', description: 'Survive for 2 minutes by performing continuous shuttle sprints.', attribute: Attribute.Agility, page: { title: 'Task 3: The Final Barrage', narrative: 'The wyrm makes a final, desperate attempt to incinerate you.' }}]}
-        ],
-        rewards: { xp: 110, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 60 }
-    },
-    { 
-        id: 'dungeon_a_06', 
-        name: 'The Berserker\'s Rage', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'You\'ve consumed a berserker\'s brew. A wave of uncontrollable energy fills you. You must expend it through intense physical exertion before it consumes you.', 
-        previewImage: '/dungeons/dungeon_a_06.jpg',
-        backgroundImage: '/dungeons/dungeon_a_06.jpg',
-        openingImage: '/dungeons/dungeon_a_06.jpg',
-        timeLimit: 900, 
-        floors: [
-            { id: 'f1', name: 'Primal Burst', tasks: [{ id: 't1', description: 'Perform 50 kettlebell swings (or dumbbell swings/burpees) to begin expending the raw energy.', attribute: Attribute.Strength, page: { title: 'Task 1: The Boiling Blood', narrative: 'The rage begins to build, a fire in your veins.' }}]},
-            { id: 'f2', name: 'Unchained Fury', tasks: [{ id: 't2', description: 'Perform 3 sets of maximum-repetition push-ups, with only 30 seconds rest between sets.', attribute: Attribute.Strength, page: { title: 'Task 2: The Unchained Fury', narrative: 'The brew takes full effect. You feel an urge to destroy.' }}]},
-            { id: 'f3', name: 'Rage Burnout', tasks: [{ id: 't3', description: 'Perform a 100-meter sprint at maximum effort to fully burn out the rage.', tracking: { mode: 'distance', distanceMeters: 100, autoComplete: true }, attribute: Attribute.Agility, page: { title: 'Task 3: The Final Howl', narrative: 'The rage is almost spent. PURGE IT.' }}]}
-        ],
-        rewards: { xp: 130, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 50 }
-    },
-    { 
-        id: 'dungeon_a_07', 
-        name: 'The Gravity Well', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'You are caught in a gravity well that threatens to crush you. Only by generating immense upward force can you hope to escape its pull.', 
-        previewImage: '/dungeons/dungeon_a_07.jpg',
-        backgroundImage: '/dungeons/dungeon_a_07.jpg',
-        openingImage: '/dungeons/dungeon_a_07.jpg',
-        timeLimit: 720, 
-        floors: [
-            { id: 'f1', name: 'Crushing Weight', tasks: [{ id: 't1', description: 'Perform 100 weighted calf raises (or 200 bodyweight) to fight against the initial pull.', attribute: Attribute.Strength, page: { title: 'Task 1: Resisting the Pull', narrative: 'The gravity well pulls at you, trying to root you to the ground.' }}]},
-            { id: 'f2', name: 'Escape Velocity', tasks: [{ id: 't2', description: 'Perform 50 box jumps (or tuck jumps) to generate explosive upward force.', attribute: Attribute.Agility, page: { title: 'Task 2: Upward Burst', narrative: 'You need to generate escape velocity.' }}]},
-            { id: 'f3', name: 'The Breakout', tasks: [{ id: 't3', description: 'Perform 50 burpees to create a final, full-body shockwave to break free.', attribute: Attribute.Endurance, page: { title: 'Task 3: The Final Push', narrative: 'A final, full-body shockwave is needed to shatter the well\'s hold.' }}]}
-        ],
-        rewards: { xp: 85, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 70 }
-    },
-    { 
-        id: 'dungeon_a_08', 
-        name: 'The Final Stand', 
-        grade: Difficulty.A, 
-        type: 'standard', 
-        description: 'The horde is endless. Your back is against the wall. This is your final stand. Fight until you have nothing left.', 
-        previewImage: '/dungeons/dungeon_a_08.jpg',
-        backgroundImage: '/dungeons/dungeon_a_08.jpg',
-        openingImage: '/dungeons/dungeon_a_08.jpg',
-        timeLimit: 1200, 
-        floors: [
-            { id: 'f1', name: 'The Outer Wall', tasks: [{ id: 't1', description: 'Survive the first 5 minutes by completing 50 push-ups.', attribute: Attribute.Strength, page: { title: 'Task 1: The Vanguard', narrative: 'The first wave of the horde crashes against your position.' }}]},
-            { id: 'f2', name: 'The Courtyard', tasks: [{ id: 't2', description: 'Survive the next 7 minutes by completing 100 squats.', attribute: Attribute.Strength, page: { title: 'Task 2: The Elites', narrative: 'Heavily armored elites have joined the fray.' }}]},
-            { id: 'f3', name: 'The Keep', tasks: [{ id: 't3', description: 'Survive the final 8 minutes by completing 25 pull-ups (or 50 inverted rows).', attribute: Attribute.Strength, page: { title: 'Task 3: The General', narrative: 'The enemy general has appeared. This is the final push.' }}]}
-        ],
-        rewards: { xp: 250, coins: QUEST_COIN_REWARDS[Difficulty.A] }, 
-        failurePenalty: { xp: 80 }
-    },
-    // --- S-RANK ---
-    { 
-        id: 'dungeon_s_01', 
-        name: 'Grim Reaper', 
-        grade: Difficulty.S, 
-        description: 'Outrunning death itself.', 
-        previewImage: '/dungeons/dungeon_s_01.jpg',
-        backgroundImage: '/dungeons/dungeon_s_01.jpg',
-        openingImage: '/dungeons/dungeon_s_01.jpg',
-        floors: [
-            { id: 'f1', name: 'Chamber of Silence', tasks: [{ id: 't1', description: '3km Run nonstop no music', tracking: { mode: 'distance', distanceMeters: 3000, autoComplete: true }, attribute: Attribute.Endurance, page: { title: 'Whispers', narrative: 'its easy to quit...' }}]},
-            { id: 'f2', name: 'End of the tunnel', tasks: [{ id: 't2', description: '100m sprint', tracking: { mode: 'distance', distanceMeters: 100, autoComplete: true }, attribute: Attribute.Agility, page: { title: 'the light', narrative: 'final push...' }}]},
-        ],
-        rewards: { xp: 450 },
-        failurePenalty: { xp: 600 }
     }
 ];
 
@@ -862,30 +829,40 @@ export const ACHIEVEMENTS_DATA: Record<string, Achievement> = {
 }; 
 
 export const SYSTEM_QUESTS: Quest[] = [
-    // E Rank
-    { id: 'sys_e_01', name: 'WALKING', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "THE START OF A JOURNEY.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_e_02', name: 'WARM UP', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "5-10 MINUTES OF WARM UP TO PREPARE FOR THE FIGHTS AHEAD.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_run_01', name: 'RUN QUEST', difficulty: Difficulty.E, attributes: [Attribute.Endurance, Attribute.Agility], description: "START A GPS TRACKED RUN. FINAL GRADE IS BASED ON DISTANCE AND PACE.", type: 'repetitive', questMode: 'distance', isSystemQuest: true },
-    // D Rank
-    { id: 'sys_d_01', name: '15 PUSH UPS', difficulty: Difficulty.D, attributes: [Attribute.Strength], description: "COMPLETE 15 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_d_02', name: 'DEAD HANG 30SEC', difficulty: Difficulty.D, attributes: [Attribute.Endurance], description: "HOLD THE DEAD HANG FOR 30 SECONDS.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_d_03', name: 'CRUNCHES 25', difficulty: Difficulty.D, attributes: [Attribute.Strength], description: "PERFORM 25 ABDOMINAL CRUNCHES.", type: 'repetitive', isSystemQuest: true },
-    // C Rank
-    { id: 'sys_c_01', name: 'PUSH UPS 25', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 25 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_c_02', name: 'PULL UPS 10', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 10 PULL UPS.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_c_03', name: 'PLANK 60 SEC', difficulty: Difficulty.C, attributes: [Attribute.Endurance, Attribute.Strength], description: "HOLD PLANK FOR 60 SECONDS.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_c_04', name: 'SQUATS 20', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "PERFORM 20 SQUATS.", type: 'repetitive', isSystemQuest: true },
-    // B Rank
-    { id: 'sys_b_01', name: 'STUDY 1HR', difficulty: Difficulty.B, attributes: [Attribute.Intellect], description: "SEEK KNOWLEDGE OF ANY KIND FOR AN HOUR.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_b_02', name: 'PUSH UPS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 50 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_b_03', name: 'SQUATS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "PERFORM 50 SQUATS.", type: 'repetitive', isSystemQuest: true },
-    // A Rank
-    { id: 'sys_a_01', name: 'PUSH UPS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 75 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_a_02', name: 'SQUATS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "PERFORM 75 SQUATS.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_a_03', name: '40 BURPEES', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "PERFORM 40 BURPEES.", type: 'repetitive', isSystemQuest: true },
-    // S Rank
-    { id: 'sys_s_01', name: 'PUSH UPS 100', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "COMPLETE 100 PUSH UPS IN GOOD FORM.", type: 'repetitive', isSystemQuest: true },
-    { id: 'sys_s_02', name: 'SQUATS 100', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "PERFORM 100 SQUATS.", type: 'repetitive', isSystemQuest: true },
+    { id: 'sys_e_warm_up', name: 'WARM UP', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "PREPARE YOUR BODY BEFORE TRAINING.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/warm-up-stretching.png' },
+    { id: 'sys_e_stretching', name: 'STRETCHING', difficulty: Difficulty.E, attributes: [Attribute.Endurance], description: "CONTROLLED MOBILITY AND STRETCHING ROUTINE.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/warm-up-stretching.png' },
+    { id: 'sys_e_jumping_jacks_25', name: 'JUMPING JACKS 25', difficulty: Difficulty.E, attributes: [Attribute.Agility, Attribute.Endurance], description: "COMPLETE 25 JUMPING JACKS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/jumping-jacks.png' },
+    { id: 'sys_d_stretch_warm', name: 'STRETCHING AND WARM UP', difficulty: Difficulty.D, attributes: [Attribute.Endurance], description: "COMPLETE A FULL STRETCH AND WARM UP ROUTINE.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/warm-up-stretching.png' },
+    { id: 'sys_d_sit_ups_25', name: 'SIT UPS 25', difficulty: Difficulty.D, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 25 SIT UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/sit-ups.png' },
+    { id: 'sys_d_jumping_jacks_50', name: 'JUMPING JACKS 50', difficulty: Difficulty.D, attributes: [Attribute.Agility, Attribute.Endurance], description: "COMPLETE 50 JUMPING JACKS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/jumping-jacks.png' },
+    { id: 'sys_c_push_ups_30', name: 'PUSH UPS 30', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 30 PUSH UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_c_squats_30', name: 'SQUATS 30', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 30 SQUATS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/squats.png' },
+    { id: 'sys_c_sit_ups_50', name: 'SIT UPS 50', difficulty: Difficulty.C, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 50 SIT UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/sit-ups.png' },
+    { id: 'sys_c_pull_ups_10', name: 'PULL UPS 10', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 10 PULL UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_c_chin_ups_15', name: 'CHIN UPS 15', difficulty: Difficulty.C, attributes: [Attribute.Strength], description: "COMPLETE 15 CHIN UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_c_mountain_climbers_40', name: 'MOUNTAIN CLIMBERS 40', difficulty: Difficulty.C, attributes: [Attribute.Agility, Attribute.Endurance], description: "COMPLETE 40 MOUNTAIN CLIMBERS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/mountain-climbers.png' },
+    { id: 'sys_c_lunges_30', name: 'LUNGES 30', difficulty: Difficulty.C, attributes: [Attribute.Strength, Attribute.Agility], description: "COMPLETE 30 LUNGES.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/lunges.png' },
+    { id: 'sys_b_squats_50', name: 'SQUATS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 50 SQUATS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/squats.png' },
+    { id: 'sys_b_push_ups_50', name: 'PUSH UPS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 50 PUSH UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_b_burpees_30', name: 'BURPEES 30', difficulty: Difficulty.B, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 30 BURPEES.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/burpees.png' },
+    { id: 'sys_b_pike_push_ups_30', name: 'PIKE PUSH UPS 30', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 30 PIKE PUSH UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pike-push-ups.png' },
+    { id: 'sys_b_overhead_press_4_sets', name: 'DUMBELL OVERHEAD PRESS 4 SETS', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 4 SETS OF DUMBELL OVERHEAD PRESS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_b_bicep_curls_40', name: 'BICEP CURLS 40', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 40 BICEP CURLS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_b_hammer_curls_40', name: 'HAMMER CURLS 40', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 40 HAMMER CURLS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_b_chair_dips_40', name: 'CHAIR DIPS 40', difficulty: Difficulty.B, attributes: [Attribute.Strength], description: "COMPLETE 40 CHAIR DIPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_b_jumping_squats_50', name: 'JUMPING SQUATS 50', difficulty: Difficulty.B, attributes: [Attribute.Strength, Attribute.Agility], description: "COMPLETE 50 JUMPING SQUATS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/jumping-squats.png' },
+    { id: 'sys_b_high_knees_rounds', name: 'HIGH KNEES 3 ROUNDS', difficulty: Difficulty.B, attributes: [Attribute.Agility, Attribute.Endurance], description: "3 ROUNDS OF 1 MINUTE HIGH KNEES WITH 30 SECONDS INTERVAL.", type: 'repetitive', questMode: 'rounds', timerConfig: { roundCount: 3, roundSeconds: 60, intervalSeconds: 30 }, isSystemQuest: true, backgroundImage: '/quests/high-knees.png' },
+    { id: 'sys_a_push_ups_75', name: 'PUSH UPS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 75 PUSH UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_a_sit_ups_100', name: 'SIT UPS 100', difficulty: Difficulty.A, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 100 SIT UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/sit-ups.png' },
+    { id: 'sys_a_squats_75', name: 'SQUATS 75', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 75 SQUATS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/squats.png' },
+    { id: 'sys_a_burpees_40', name: 'BURPEES 40', difficulty: Difficulty.A, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 40 BURPEES.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/burpees.png' },
+    { id: 'sys_a_pull_ups_40', name: 'PULL UPS 40', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 40 PULL UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_a_chin_ups_50', name: 'CHIN UPS 50', difficulty: Difficulty.A, attributes: [Attribute.Strength], description: "COMPLETE 50 CHIN UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/pull-ups.png' },
+    { id: 'sys_s_push_ups_100', name: '100 PUSH UPS', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "COMPLETE 100 PUSH UPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/push-ups.png' },
+    { id: 'sys_s_squats_110', name: '110 SQUATS', difficulty: Difficulty.S, attributes: [Attribute.Strength], description: "COMPLETE 110 SQUATS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/squats.png' },
+    { id: 'sys_s_situps_150', name: '150 SITUPS', difficulty: Difficulty.S, attributes: [Attribute.Strength, Attribute.Endurance], description: "COMPLETE 150 SITUPS.", type: 'repetitive', isSystemQuest: true, backgroundImage: '/quests/sit-ups.png' },
+    { id: 'sys_tracking_running', name: 'RUNNING', difficulty: Difficulty.E, attributes: [Attribute.Endurance, Attribute.Agility], description: "GPS TRACKED RUN. FINAL GRADE IS BASED ON DISTANCE AND PACE.", type: 'repetitive', questMode: 'distance', isSystemQuest: true },
+    { id: 'sys_stopwatch_jumping_jacks', name: 'JUMPING JACKS STOPWATCH', difficulty: Difficulty.C, attributes: [Attribute.Agility, Attribute.Endurance], description: "STOPWATCH QUEST. BELOW 30 SECONDS IS DISCARDED. 30-01:29 EARNS D RANK. 01:30+ EARNS C RANK.", type: 'repetitive', questMode: 'stopwatch', timerConfig: { minDurationSeconds: 30, stopwatchGrades: [{ minSeconds: 30, grade: Difficulty.D }, { minSeconds: 90, grade: Difficulty.C }] }, isSystemQuest: true, backgroundImage: '/quests/jumping-jacks.png' },
     // Special Rank
     { id: 'sys_x_01', name: 'SLOTH-GLUTTONY', difficulty: Difficulty.X, attributes: [], description: "An uncontrollable temptation boils within. You can only succumb to it. There is no victory, only the aftermath.", failurePenalty: { xp: 250 }, type: 'repetitive', isSystemQuest: true },
 ];

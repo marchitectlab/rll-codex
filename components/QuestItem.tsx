@@ -50,7 +50,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
 
   const hasFailureCondition = !!quest.failurePenalty;
   const isDistanceQuest = quest.questMode === 'distance';
-  const isTimedQuest = quest.questMode === 'countdown' || quest.questMode === 'rounds';
+  const isTimedQuest = quest.questMode === 'countdown' || quest.questMode === 'rounds' || quest.questMode === 'stopwatch';
 
   const handleAction = () => {
     if (isProcessing) return;
@@ -109,7 +109,11 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
                              </p>
                         ) : isTimedQuest ? (
                              <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-normal text-cyan-300">
-                                {quest.questMode === 'countdown' ? 'Timer auto-clear protocol' : `${quest.timerConfig?.roundCount || 1} rounds protocol`}
+                                {quest.questMode === 'countdown'
+                                    ? 'Timer auto-clear protocol'
+                                    : quest.questMode === 'stopwatch'
+                                        ? 'Stopwatch grading protocol'
+                                        : `${quest.timerConfig?.roundCount || 1} rounds protocol`}
                              </p>
                         ) : xp > 0 && (
                              <p className={`text-[9px] md:text-[10px] font-semibold uppercase tracking-normal ${styles.text}`}>

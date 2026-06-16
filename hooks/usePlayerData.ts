@@ -90,6 +90,18 @@ const mergeSystemQuests = (quests: Quest[] | undefined): Quest[] => {
     return [...systemQuests, ...customQuests];
 };
 
+const getStopwatchGrade = (quest: Quest, elapsedSeconds: number): Difficulty | null => {
+    const minimumSeconds = quest.timerConfig?.minDurationSeconds ?? 0;
+    if (elapsedSeconds < minimumSeconds) return null;
+
+    const thresholds = [...(quest.timerConfig?.stopwatchGrades || [])]
+        .sort((a, b) => a.minSeconds - b.minSeconds);
+
+    return thresholds.reduce<Difficulty>((grade, threshold) => {
+        return elapsedSeconds >= threshold.minSeconds ? threshold.grade : grade;
+    }, quest.difficulty);
+};
+
 const getInitialState = (): PlayerDataState => {
     try {
         const saved = localStorage.getItem('playerData');
@@ -490,6 +502,69 @@ export const usePlayerData = () => {
         }
         // Release the lock
         setTimeout(() => processingQuests.current.delete(id), 500);
+    }, [state.quests, addNotification, gainXp, checkAchievements]);
+
+    const completeStopwatchQuest = useCallback((id: string, elapsedSeconds: number): Difficulty | null => {
+        if (processingQuests.current.has(id)) return null;
+
+        const q = state.quests.find(x => x.id === id);
+        if (!q) return null;
+
+        processingQuests.current.add(id);
+
+        const finalGrade = getStopwatchGrade(q, elapsedSeconds);
+        if (!finalGrade) {
+            addNotification('QUEST DISCARDED', `${q.name} ended before the minimum ${q.timerConfig?.minDurationSeconds || 0}s requirement.`, 'danger');
+            setTimeout(() => processingQuests.current.delete(id), 500);
+            return null;
+        }
+
+        const earnedXp = XP_PER_DIFFICULTY[finalGrade] || 0;
+        const coins = QUEST_COIN_REWARDS[finalGrade] || 0;
+        const statPoints = STAT_POINTS_PER_DIFFICULTY[finalGrade] || 0;
+        const completionRecord: CompletedQuest = {
+            ...q,
+            difficulty: finalGrade,
+            completedAt: new Date().toISOString(),
+            completionId: `sw-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            earnedXp,
+            description: `${q.description || ''} Completed in ${elapsedSeconds}s.`.trim(),
+        };
+
+        setState(prevState => {
+            const newAttributes = { ...prevState.player.attributes };
+            if (q.attributes && q.attributes.length > 0 && statPoints > 0) {
+                q.attributes.forEach((attr) => {
+                    newAttributes[attr] = (newAttributes[attr] || 0) + statPoints;
+                });
+            }
+
+            return {
+                ...prevState,
+                quests: q.type === 'one-time' ? prevState.quests.filter(quest => quest.id !== id) : prevState.quests,
+                completedQuests: [completionRecord, ...prevState.completedQuests],
+                player: {
+                    ...prevState.player,
+                    shopCoins: prevState.player.shopCoins + coins,
+                    attributes: newAttributes,
+                },
+            };
+        });
+
+        if (q.attributes && q.attributes.length > 0 && statPoints > 0) {
+            q.attributes.forEach((attr) => {
+                addNotification('STAT INCREASE', `${attr.toUpperCase()} +${statPoints}`, 'success');
+            });
+        }
+        gainXp(earnedXp, q.name, finalGrade);
+        checkAchievements('COMPLETE_QUEST', { difficulty: finalGrade });
+        addNotification('STOPWATCH CLEAR', `${q.name} completed in ${elapsedSeconds}s. Grade [${finalGrade}].`, 'success');
+        if (coins > 0) {
+            addNotification('REWARD GRANTED', `Received ${coins} Shop Coins.`, 'info');
+        }
+
+        setTimeout(() => processingQuests.current.delete(id), 500);
+        return finalGrade;
     }, [state.quests, addNotification, gainXp, checkAchievements]);
 
     const completeDistanceQuest = useCallback((id: string, distanceMeters: number, durationSeconds: number, route: RunRoutePoint[] = [], routeImage?: string): DistanceRunResult | null => {
@@ -1147,7 +1222,7 @@ export const usePlayerData = () => {
 
     return { 
         ...state, 
-        gainXp, clearActiveDungeon, enhanceGear, advanceGear, toggleTaskListTask, addTaskListTask, deleteTaskListTask, addQuest, deleteQuest, failQuest, completeQuest, completeDistanceQuest, startDungeon, progressDungeon, failActiveDungeon, buyItem, earnDungeonKey, setProDungeonKeys, 
+        gainXp, clearActiveDungeon, enhanceGear, advanceGear, toggleTaskListTask, addTaskListTask, deleteTaskListTask, addQuest, deleteQuest, failQuest, completeQuest, completeStopwatchQuest, completeDistanceQuest, startDungeon, progressDungeon, failActiveDungeon, buyItem, earnDungeonKey, setProDungeonKeys, 
         renamePlayer: (newName: string) => { if (newName.trim()) { setState(s => ({ ...s, player: { ...s.player, name: newName.trim() } })); addNotification('IDENTITY UPDATED', `Recognized as [${newName}].`, 'info'); } }, 
         equipItem: (item: ShopItem) => {
             setState(s => {

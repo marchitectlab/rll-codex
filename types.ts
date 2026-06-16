@@ -41,15 +41,18 @@ export interface Quest {
   description?: string;
   difficulty: Difficulty;
   type: 'repetitive' | 'one-time';
-  questMode?: 'standard' | 'distance' | 'countdown' | 'rounds';
+  questMode?: 'standard' | 'distance' | 'countdown' | 'rounds' | 'stopwatch';
   timerConfig?: {
     durationSeconds?: number;
     roundCount?: number;
     roundSeconds?: number;
     intervalSeconds?: number;
+    minDurationSeconds?: number;
+    stopwatchGrades?: { minSeconds: number; grade: Difficulty }[];
   };
   attributes: Attribute[];
   isSystemQuest?: boolean;
+  backgroundImage?: string;
   failurePenalty?: {
     xp: number;
   };

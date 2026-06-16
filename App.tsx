@@ -364,6 +364,72 @@ const ConfirmationModal: React.FC<{ isOpen: boolean; title: string; message: str
     );
 };
 
+const getDungeonEntranceImage = (dungeon: Dungeon): string => (
+    dungeon.grade === DifficultyEnum.A ? '/dungeons/entrance_a.png' : '/dungeons/entrance_eb.png'
+);
+
+const DungeonEntranceModal: React.FC<{ dungeon: Dungeon | null; onConfirm: () => void; onCancel: () => void }> = ({ dungeon, onConfirm, onCancel }) => {
+    const [showWarning, setShowWarning] = useState(false);
+
+    useEffect(() => {
+        setShowWarning(false);
+    }, [dungeon?.id]);
+
+    if (!dungeon) return null;
+
+    const styles = getGradeStyles(dungeon.grade);
+    const entranceImage = getDungeonEntranceImage(dungeon);
+
+    return (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[160] backdrop-blur-md p-4">
+            <div className={`relative w-full max-w-md overflow-hidden rounded border-2 ${styles.border} shadow-[0_0_30px_rgba(56,189,248,0.25)]`}>
+                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${entranceImage})` }} />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-slate-950/70 to-black/95" />
+                <div className="relative p-5 min-h-[520px] flex flex-col">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="font-orbitron text-[9px] text-blue-200 uppercase tracking-[0.24em]">System Gate Alert</p>
+                            <h3 className="font-orbitron text-xl font-black uppercase text-white mt-1">{dungeon.name}</h3>
+                            <p className={`font-orbitron text-sm font-black ${styles.text}`}>[{dungeon.grade}] Rank Gate</p>
+                        </div>
+                        <button
+                            onClick={() => setShowWarning(value => !value)}
+                            className="h-9 w-9 rounded-full border border-blue-300/50 bg-black/55 text-blue-100 flex items-center justify-center font-orbitron text-sm font-black hover:bg-blue-500/20 transition-colors"
+                            aria-label="Show safety warning"
+                        >
+                            i
+                        </button>
+                    </div>
+
+                    <div className="mt-auto space-y-4">
+                        {showWarning && (
+                            <div className="border border-yellow-400/40 bg-yellow-950/45 rounded p-3">
+                                <p className="font-orbitron text-[9px] text-yellow-300 uppercase tracking-[0.2em] mb-1">Safety Warning</p>
+                                <p className="text-[11px] text-yellow-50/90 uppercase tracking-wide leading-relaxed font-bold">
+                                    Please make sure you are in an environment where you can complete physical tasks safely, including indoor workouts and running.
+                                </p>
+                            </div>
+                        )}
+                        <div className="border border-blue-400/25 bg-black/55 rounded p-4">
+                            <p className="font-rajdhani text-lg font-semibold leading-relaxed text-slate-100">
+                                A gate has opened. Confirm entry only when you are ready to complete the required tasks.
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={onCancel} className="border border-slate-700 bg-slate-950/90 px-4 py-3 rounded-sm font-orbitron text-[11px] uppercase font-bold tracking-[0.12em] text-slate-400 hover:text-white hover:border-slate-500 transition-colors">
+                                Cancel
+                            </button>
+                            <button onClick={onConfirm} className="border border-blue-400/60 bg-blue-600/35 px-4 py-3 rounded-sm font-orbitron text-[11px] uppercase font-bold tracking-[0.12em] text-blue-100 hover:bg-blue-500/45 shadow-[0_0_18px_rgba(14,165,233,0.18)] transition-all">
+                                Enter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const StatusPage: React.FC<{ player: Player; onRename: (name: string) => void }> = ({ player, onRename }) => (<div className="w-full h-full"><PlayerStats player={player} onRename={onRename} /></div>);
 
 const AchievementsPage: React.FC<{ achievements: Record<string, Achievement> }> = ({ achievements }) => {
@@ -588,7 +654,7 @@ const DungeonsPage: React.FC<{
         const currentTask = activeTask;
         const isCompletionReady = activeDungeon.currentFloorIndex >= dungeon.floors.length - 1 && activeDungeon.currentTaskIndex >= currentFloor.tasks.length;
         const activeBackground = isCompletionReady ? getDungeonExitImage(dungeon.grade) : getDungeonFloorImage(dungeon, currentFloor, 'opening');
-        const isHighLevelThreat = [DifficultyEnum.A, DifficultyEnum.S, DifficultyEnum.S_PLUS, DifficultyEnum.X].includes(dungeon.grade);
+        const isHighLevelThreat = dungeon.grade === DifficultyEnum.A;
         const handleClaimRewards = () => {
             if (isLootOpening || lootReadyToClaim) return;
             const rewardRoll = rollDungeonRewards(dungeon.grade);
@@ -882,7 +948,7 @@ const DungeonsPage: React.FC<{
     }
 
     if (!selectedRank) {
-        const ranks = [DifficultyEnum.E, DifficultyEnum.D, DifficultyEnum.C, DifficultyEnum.B, DifficultyEnum.A, DifficultyEnum.S, DifficultyEnum.S_PLUS];
+        const ranks = [DifficultyEnum.E, DifficultyEnum.D, DifficultyEnum.C, DifficultyEnum.B, DifficultyEnum.A];
         return (
             <div className="space-y-4">
                 {renderSubNav()}
@@ -1220,6 +1286,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
     }, [onSignOut]);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [confirm, setConfirm] = useState<any>(null);
+    const [gateConfirm, setGateConfirm] = useState<Dungeon | null>(null);
     const [showPromo, setShowPromo] = useState(false);
     const [showRate, setShowRate] = useState(false);
     const [showUpgradePro, setShowUpgradePro] = useState(false);
@@ -1430,9 +1497,14 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
         setActiveQuestRunner(quest);
     }, []);
 
-    const handleRunnerComplete = useCallback((id: string) => {
+    const handleRunnerComplete = useCallback((id: string, elapsedSeconds?: number) => {
         void (async () => {
             if (!isPro) await showInterstitialAd();
+            const quest = data.quests.find(q => q.id === id);
+            if (quest?.questMode === 'stopwatch' && typeof elapsedSeconds === 'number') {
+                data.completeStopwatchQuest(id, elapsedSeconds);
+                return;
+            }
             data.completeQuest(id);
         })();
     }, [data, isPro]);
@@ -1488,16 +1560,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             case 'achievements': return <AchievementsPage achievements={data.achievements} />;
             case 'quests': return <QuestLogPage quests={data.quests} completedQuests={data.completedQuests} dungeonHistory={data.dungeonHistory} onComplete={handleCompleteQuest} onStartQuest={handleStartQuestRunner} onStartDistance={handleStartDistanceQuest} onDelete={id => setConfirm({ title: 'Erase Entry', message: 'Permanently purge this quest record?', isDangerous: true, onConfirm: () => data.deleteQuest(id) })} onFail={id => data.failQuest(id)} onAddQuest={data.addQuest} onWatchAdForQuest={handleWatchAdForQuest} />;
             case 'skills': return <SkillsPage skills={data.skills} skillFolders={data.skillFolders} categories={data.categories} improveSkill={data.improveSkill} addSkill={data.addSkill} addSkillFolder={data.addSkillFolder} addCategory={data.addCategory} onDeleteSkill={data.deleteSkill} onDeleteSkillFolder={data.deleteSkillFolder} onDeleteCategory={data.deleteCategory} />;
-            case 'dungeons': return <DungeonsPage onStartDungeon={d => {
-                const highDifficulty = [DifficultyEnum.B, DifficultyEnum.A, DifficultyEnum.S, DifficultyEnum.S_PLUS, DifficultyEnum.X].includes(d.grade);
-                setConfirm({
-                    title: 'Enter Gate',
-                    message: highDifficulty
-                        ? `Proceed into [${d.grade}] Gate: ${d.name}? High difficulty.`
-                        : `Proceed into [${d.grade}] Gate: ${d.name}?`,
-                    onConfirm: () => data.startDungeon(d.id)
-                });
-            }} activeDungeon={data.activeDungeon} dungeonCooldowns={data.dungeonCooldowns} onClearDungeon={handleClearDungeon} onFailDungeon={() => setConfirm({ title: 'Abandon Dungeon', message: 'Leaving now will result in failure. Confirm abandonment?', isDangerous: true, onConfirm: data.failActiveDungeon })} onDungeonTimeout={data.failActiveDungeon} onProgressDungeon={data.progressDungeon} dungeonHistory={data.dungeonHistory} playerLevel={data.player.level} dungeonKeys={data.dungeonKeys} isPro={isPro} onEarnKey={() => showRewardedAd(data.earnDungeonKey)} />;
+            case 'dungeons': return <DungeonsPage onStartDungeon={d => setGateConfirm(d)} activeDungeon={data.activeDungeon} dungeonCooldowns={data.dungeonCooldowns} onClearDungeon={handleClearDungeon} onFailDungeon={() => setConfirm({ title: 'Abandon Dungeon', message: 'Leaving now will result in failure. Confirm abandonment?', isDangerous: true, onConfirm: data.failActiveDungeon })} onDungeonTimeout={data.failActiveDungeon} onProgressDungeon={data.progressDungeon} dungeonHistory={data.dungeonHistory} playerLevel={data.player.level} dungeonKeys={data.dungeonKeys} isPro={isPro} onEarnKey={() => showRewardedAd(data.earnDungeonKey)} />;
             case 'history': return <QuestHistory completedQuests={data.completedQuests} dungeonHistory={data.dungeonHistory} onUpgradePro={() => handleShowUpgrade('Detailed History Log')} isPro={isPro} />;
             case 'task-list': return <TaskList weeklyPlan={data.weeklyPlan} onAddTask={data.addTaskListTask} onToggleTask={data.toggleTaskListTask} onDeleteTask={data.deleteTaskListTask} />;
             case 'workshop': return <WorkshopPage inventory={data.inventory} onEnhance={data.enhanceGear} onAdvance={data.advanceGear} player={data.player} />;
@@ -1700,6 +1763,14 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
             )}
 
             <ConfirmationModal isOpen={!!confirm} title={confirm?.title || ''} message={confirm?.message || ''} onConfirm={confirm?.onConfirm || (() => {})} onCancel={() => setConfirm(null)} isDangerous={confirm?.isDangerous} />
+            <DungeonEntranceModal
+                dungeon={gateConfirm}
+                onCancel={() => setGateConfirm(null)}
+                onConfirm={() => {
+                    if (gateConfirm) data.startDungeon(gateConfirm.id);
+                    setGateConfirm(null);
+                }}
+            />
 
             {showPromo && <PromoModal onClose={() => setShowPromo(false)} onPurchase={openPurchaseModal} />}
             {showRate && <RateAppModal level={data.player.level} onClose={() => setShowRate(false)} />}

@@ -9,12 +9,13 @@ type RoundPhase = 'work' | 'interval';
 interface QuestRunnerPageProps {
   quest: Quest;
   onCancel: () => void;
-  onComplete: (questId: string) => void;
+  onComplete: (questId: string, elapsedSeconds?: number) => void;
 }
 
 const getModeLabel = (quest: Quest): string => {
   if (quest.questMode === 'countdown') return 'Countdown Quest';
   if (quest.questMode === 'rounds') return 'Round Quest';
+  if (quest.questMode === 'stopwatch') return 'Stopwatch Quest';
   return 'Standard Quest';
 };
 
@@ -37,23 +38,30 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
   const [roundIndex, setRoundIndex] = useState(1);
   const [phase, setPhase] = useState<RoundPhase>('work');
   const [completed, setCompleted] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const totalRounds = Math.max(1, quest.timerConfig?.roundCount || 1);
   const roundSeconds = Math.max(5, quest.timerConfig?.roundSeconds || 60);
   const intervalSeconds = Math.max(0, quest.timerConfig?.intervalSeconds || 0);
   const rewardXp = XP_PER_DIFFICULTY[quest.difficulty] || 0;
   const rewardCoins = QUEST_COIN_REWARDS[quest.difficulty] || 0;
+  const minimumStopwatchSeconds = quest.timerConfig?.minDurationSeconds || 0;
+  const stopwatchGrades = [...(quest.timerConfig?.stopwatchGrades || [])].sort((a, b) => a.minSeconds - b.minSeconds);
+  const currentStopwatchGrade = stopwatchGrades.reduce((grade, threshold) => (
+    elapsedSeconds >= threshold.minSeconds ? threshold.grade : grade
+  ), quest.difficulty);
 
   const primaryLabel = useMemo(() => {
     if (quest.questMode === 'rounds') return phase === 'work' ? `Round ${roundIndex}` : 'Interval';
     if (quest.questMode === 'countdown') return 'Countdown';
+    if (quest.questMode === 'stopwatch') return elapsedSeconds < minimumStopwatchSeconds ? 'Minimum Time Required' : `Current Grade [${currentStopwatchGrade}]`;
     return 'Objective Active';
-  }, [quest.questMode, phase, roundIndex]);
+  }, [quest.questMode, phase, roundIndex, elapsedSeconds, minimumStopwatchSeconds, currentStopwatchGrade]);
 
   const finishQuest = () => {
     if (completed) return;
     setCompleted(true);
-    onComplete(quest.id);
+    onComplete(quest.id, quest.questMode === 'stopwatch' ? elapsedSeconds : undefined);
     setStatus('complete');
   };
 
@@ -94,12 +102,21 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
     return () => window.clearInterval(timer);
   }, [status, quest.questMode, phase, roundIndex, totalRounds, roundSeconds, intervalSeconds, completed]);
 
+  useEffect(() => {
+    if (status !== 'running' || quest.questMode !== 'stopwatch') return;
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(current => current + 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [status, quest.questMode]);
+
   const startQuest = () => {
     setStatus('running');
     setTimeLeft(getInitialTime(quest));
     setRoundIndex(1);
     setPhase('work');
     setCompleted(false);
+    setElapsedSeconds(0);
   };
 
   return (
@@ -131,9 +148,14 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
             <StatPanel label="Mode" value={getModeLabel(quest)} tone="text-cyan-300" />
             <StatPanel label="Status" value={status === 'complete' ? 'Clear' : status === 'running' ? 'Active' : 'Ready'} />
-            <StatPanel label="Timer" value={quest.questMode === 'standard' ? '--' : formatDuration(timeLeft)} tone="text-green-300" />
+            <StatPanel label="Timer" value={quest.questMode === 'standard' ? '--' : quest.questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)} tone="text-green-300" />
             <StatPanel label="Type" value={quest.type.replace('-', ' ')} tone="text-blue-300" />
           </div>
+          {quest.questMode === 'stopwatch' && (
+            <p className="mt-4 text-[10px] text-cyan-200/80 uppercase tracking-widest leading-relaxed">
+              Below {formatDuration(minimumStopwatchSeconds)} is discarded. {stopwatchGrades.map(rule => `${formatDuration(rule.minSeconds)}+ = ${rule.grade}`).join(' | ')}
+            </p>
+          )}
         </section>
 
         <div className="flex-1 border border-white/10 bg-black/30 rounded p-4 md:p-6 mb-5">
@@ -151,7 +173,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
               <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal mb-2">{quest.name}</p>
               <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{primaryLabel}</p>
               <p className="font-orbitron text-4xl md:text-6xl font-bold text-white mb-4">
-                {quest.questMode === 'standard' ? 'READY' : formatDuration(timeLeft)}
+                {quest.questMode === 'standard' ? 'READY' : quest.questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
               </p>
               {quest.questMode === 'rounds' && (
                 <p className="font-orbitron text-xs text-gray-400 uppercase tracking-[0.25em]">
@@ -175,6 +197,11 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
         {status === 'running' && quest.questMode === 'standard' && (
           <button onClick={finishQuest} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50">
             Complete Quest
+          </button>
+        )}
+        {status === 'running' && quest.questMode === 'stopwatch' && (
+          <button onClick={finishQuest} className={`font-orbitron text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border ${elapsedSeconds < minimumStopwatchSeconds ? 'bg-red-800 hover:bg-red-700 border-red-400/50' : 'bg-blue-700 hover:bg-blue-600 border-blue-400/50'}`}>
+            {elapsedSeconds < minimumStopwatchSeconds ? 'Finish and Discard' : `Finish [${currentStopwatchGrade}]`}
           </button>
         )}
       </div>
