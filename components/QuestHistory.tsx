@@ -20,6 +20,12 @@ interface DailyActivity {
   totalXp: number;
 }
 
+const getDungeonTaskDescriptions = (entry: DungeonHistoryEntry): string[] => {
+    const dungeon = DUNGEONS.find(item => item.id === entry.id);
+    if (!dungeon) return [];
+    return dungeon.floors.flatMap(floor => floor.tasks.map(task => task.description));
+};
+
 // --- HELPER FUNCTIONS & CONSTANTS ---
 const difficultyStyles: Record<Difficulty, { text: string; border: string }> = {
     [Difficulty.E]: { text: 'text-gray-500', border: 'border-gray-700' },
@@ -139,7 +145,29 @@ const HistoryDetailModal: React.FC<{ date: Date; activities: DailyActivity; onCl
                             <div key={q.completionId} className={`p-2 bg-gray-900/50 rounded-md text-sm ${q.difficulty === Difficulty.X ? 'border border-red-800' : ''}`}>{content}</div>
                         );
                     })}</div></div>}
-                    {activities.dungeons.length > 0 && <div><h3 className="font-orbitron text-lg text-gray-300 mb-2">Dungeons</h3><div className="space-y-2">{activities.dungeons.map(d => <div key={d.completedAt} className={`p-2 bg-gray-900/50 rounded-md text-sm ${d.status === 'failed' ? 'opacity-60' : ''}`}><span className={`font-bold mr-2 ${difficultyStyles[d.grade].text}`}>[{d.grade}]</span>{d.name} - <span className={d.status === 'cleared' ? 'text-green-400' : 'text-red-400'}>{d.status}</span></div>)}</div></div>}
+                    {activities.dungeons.length > 0 && (
+                        <div>
+                            <h3 className="font-orbitron text-lg text-gray-300 mb-2">Dungeon Tasks Recorded</h3>
+                            <div className="space-y-2">
+                                {activities.dungeons.flatMap(d => {
+                                    const tasks = getDungeonTaskDescriptions(d);
+                                    return tasks.length > 0
+                                        ? tasks.map((task, index) => (
+                                            <div key={`${d.completedAt}-${index}`} className="p-2 bg-gray-900/50 rounded-md text-sm">
+                                                <span className={`font-bold mr-2 ${difficultyStyles[d.grade].text}`}>[{d.grade}]</span>
+                                                {task}
+                                            </div>
+                                        ))
+                                        : [(
+                                            <div key={d.completedAt} className="p-2 bg-gray-900/50 rounded-md text-sm">
+                                                <span className={`font-bold mr-2 ${difficultyStyles[d.grade].text}`}>[{d.grade}]</span>
+                                                {d.name}
+                                            </div>
+                                        )];
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

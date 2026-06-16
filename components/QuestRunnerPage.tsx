@@ -50,6 +50,9 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
   const currentStopwatchGrade = stopwatchGrades.reduce((grade, threshold) => (
     elapsedSeconds >= threshold.minSeconds ? threshold.grade : grade
   ), quest.difficulty);
+  const backgroundStyle = quest.backgroundImage ? {
+    backgroundImage: `linear-gradient(180deg, rgba(2,6,23,0.48), rgba(2,6,23,0.74) 48%, rgba(2,6,23,0.94)), url(${quest.backgroundImage})`,
+  } : undefined;
 
   const primaryLabel = useMemo(() => {
     if (quest.questMode === 'rounds') return phase === 'work' ? `Round ${roundIndex}` : 'Interval';
@@ -120,7 +123,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
   };
 
   return (
-    <div className="min-h-full bg-[#020617] text-white overflow-y-auto">
+    <div className="min-h-full bg-[#020617] bg-cover bg-center text-white overflow-y-auto" style={backgroundStyle}>
       <div className="min-h-full px-4 pb-5 md:p-8 flex flex-col" style={{ paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
         <header className="flex items-center justify-between gap-3 mb-6">
           <button onClick={onCancel} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-gray-400 border border-white/10 px-3 py-2 rounded hover:text-white hover:border-blue-400/50">
@@ -132,7 +135,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           </div>
         </header>
 
-        <section className="border border-blue-500/20 bg-blue-950/10 rounded p-4 md:p-6 mb-5">
+        <section className="border border-blue-500/20 bg-blue-950/25 backdrop-blur-sm rounded p-4 md:p-6 mb-5">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-normal">Quest Grade</p>
@@ -158,7 +161,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           )}
         </section>
 
-        <div className="flex-1 border border-white/10 bg-black/30 rounded p-4 md:p-6 mb-5">
+        <div className="flex-1 border border-white/10 bg-black/45 backdrop-blur-[2px] rounded p-4 md:p-6 mb-5">
           {status === 'complete' ? (
             <div className="h-full flex flex-col justify-center text-center py-8">
               <p className="font-orbitron text-[10px] text-blue-400 uppercase tracking-[0.3em] mb-3">Quest Complete</p>
