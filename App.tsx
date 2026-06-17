@@ -1270,9 +1270,10 @@ interface AppProps {
   authError: string | null;
   onClearAuthError: () => void;
   authLoading: boolean;
+  authCallbackNotice?: { id: number; hasSession: boolean } | null;
 }
 
-const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSignOut, onResetPassword, authError, onClearAuthError, authLoading }) => {
+const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSignOut, onResetPassword, authError, onClearAuthError, authLoading, authCallbackNotice }) => {
     const data = usePlayerData();
     const { isPro, purchasing, offeringsLoading, offeringsError, offeringsErrorMsg, monthlyPlan, lifetimePlan, purchasePlan, restoreProPurchases, retryOfferings, refreshProStatus } = usePro(userId);
     const [page, setPage] = useState<Page | 'startup'>('startup');
@@ -1298,6 +1299,19 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
     const [activeQuestRunner, setActiveQuestRunner] = useState<Quest | null>(null);
     const promoCountRef = React.useRef(0);
     const prevLevelRef = React.useRef<number | null>(null);
+    const handledAuthCallbackNoticeRef = React.useRef<number | null>(null);
+
+    useEffect(() => {
+        if (!authCallbackNotice || handledAuthCallbackNoticeRef.current === authCallbackNotice.id) return;
+        handledAuthCallbackNoticeRef.current = authCallbackNotice.id;
+        data.addNotification('EMAIL VERIFIED', 'Email verified successfully.', 'success');
+        if (authCallbackNotice.hasSession || userId) {
+            setShowAuthModal(false);
+            setPage('menu');
+        } else {
+            setShowAuthModal(true);
+        }
+    }, [authCallbackNotice, data, userId]);
     const pageRef = React.useRef<Page | 'startup'>('startup');
     const activeDungeonRef = React.useRef<ActiveDungeonState | null>(null);
     const failActiveDungeonRef = React.useRef(data.failActiveDungeon);

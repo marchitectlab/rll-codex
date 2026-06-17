@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
+const EMAIL_VERIFY_REDIRECT_URL = 'com.rll.pro.mobile://login-callback';
+
 export type AuthState = {
   user: User | null;
   session: Session | null;
@@ -71,10 +73,52 @@ export const useAuth = () => {
     };
   }, []);
 
+  const refreshSession = useCallback(async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    setAuthState({ user: session?.user ?? null, session: session ?? null, loading: false, error: null });
+    return session;
+  }, []);
+
+  const handleAuthCallbackUrl = useCallback(async (url: string) => {
+    setAuthState(s => ({ ...s, loading: true, error: null }));
+    try {
+      const parsed = new URL(url);
+      const queryParams = new URLSearchParams(parsed.search);
+      const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ''));
+      const code = queryParams.get('code');
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+      } else if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) throw error;
+      }
+
+      const session = await refreshSession();
+      return { success: true, hasSession: !!session };
+    } catch (e) {
+      setAuthState(s => ({ ...s, loading: false, error: friendlyError(e, 'Could not verify email. Try logging in again.') }));
+      return { success: false, hasSession: false };
+    }
+  }, [refreshSession]);
+
   const signUp = useCallback(async (email: string, password: string) => {
     setAuthState(s => ({ ...s, loading: true, error: null }));
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: EMAIL_VERIFY_REDIRECT_URL,
+        },
+      });
       if (error) {
         const msg = isNetworkError(error)
           ? 'Connection failed. Check your internet and try again.'
@@ -137,5 +181,5 @@ export const useAuth = () => {
     setAuthState(s => ({ ...s, error: null }));
   }, []);
 
-  return { ...authState, signUp, signIn, signOut, resetPassword, clearError };
+  return { ...authState, signUp, signIn, signOut, resetPassword, clearError, refreshSession, handleAuthCallbackUrl };
 };

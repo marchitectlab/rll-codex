@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useAuth } from './hooks/useAuth';
 import { initializeRevenueCat } from './lib/revenuecat';
@@ -28,7 +28,16 @@ const LoadingScreen: React.FC = () => (
 );
 
 const AppRoot: React.FC = () => {
-  const { user, loading, signIn, signUp, signOut, resetPassword, error, clearError } = useAuth();
+  const { user, loading, signIn, signUp, signOut, resetPassword, error, clearError, handleAuthCallbackUrl } = useAuth();
+  const [authCallbackNotice, setAuthCallbackNotice] = useState<{ id: number; hasSession: boolean } | null>(null);
+
+  const processAuthCallbackUrl = useCallback(async (url?: string | null) => {
+    if (!url || !url.startsWith('com.rll.pro.mobile://login-callback')) return;
+    const result = await handleAuthCallbackUrl(url);
+    if (result.success) {
+      setAuthCallbackNotice({ id: Date.now(), hasSession: result.hasSession });
+    }
+  }, [handleAuthCallbackUrl]);
 
   // Initialize RevenueCat ANONYMOUSLY on app start so prices are visible before login.
   // This runs immediately — no waiting for auth.
@@ -36,6 +45,27 @@ const AppRoot: React.FC = () => {
     if (!Capacitor.isNativePlatform()) return;
     initializeRevenueCat(); // anonymous — no userId
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let listener: any = null;
+    let cancelled = false;
+
+    import('@capacitor/app').then(({ App: CapApp }) => {
+      if (cancelled) return;
+      CapApp.addListener('appUrlOpen', ({ url }: { url: string }) => {
+        processAuthCallbackUrl(url);
+      }).then((l: any) => { listener = l; });
+      CapApp.getLaunchUrl?.().then((result: { url?: string } | undefined) => {
+        processAuthCallbackUrl(result?.url);
+      });
+    }).catch(() => {});
+
+    return () => {
+      cancelled = true;
+      listener?.remove?.();
+    };
+  }, [processAuthCallbackUrl]);
 
   // Once auth resolves and a user is known, re-initialize RC to link their identity.
   // RC handles de-duplication of configure calls internally.
@@ -67,6 +97,7 @@ const AppRoot: React.FC = () => {
       authError={error}
       onClearAuthError={clearError}
       authLoading={loading}
+      authCallbackNotice={authCallbackNotice}
     />
   );
 };
