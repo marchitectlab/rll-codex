@@ -357,13 +357,6 @@ export const ReportExport: React.FC<ReportExportProps> = ({ player, completedQue
                         >
                             {isGenerating ? '⟳ RENDERING...' : 'INITIATE RENDER'}
                         </button>
-                        <button
-                            onClick={() => handleRenderClick('download')}
-                            disabled={isGenerating}
-                            className="w-full font-orbitron bg-cyan-700/80 text-white py-4 rounded-sm uppercase font-black text-xs tracking-[0.3em] hover:bg-cyan-600 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all border border-cyan-400/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            Download
-                        </button>
                         {!isPro && (
                             <div className="flex items-center justify-center gap-2 text-[9px] font-orbitron font-black text-yellow-500/60 uppercase tracking-widest">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>

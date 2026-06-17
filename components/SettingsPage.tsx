@@ -142,12 +142,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </SettingPanel>
 
         <SettingPanel eyebrow="Backup" title="Local Data">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button onClick={() => onExport('share')} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-4 py-3 rounded text-[10px] font-black uppercase tracking-widest border border-blue-400/40 transition-all">
               Share Backup
-            </button>
-            <button onClick={() => onExport('download')} className="font-orbitron bg-cyan-700 hover:bg-cyan-600 text-white px-4 py-3 rounded text-[10px] font-black uppercase tracking-widest border border-cyan-400/40 transition-all">
-              Download
             </button>
             <ImportDataButton onImport={onImport} />
           </div>

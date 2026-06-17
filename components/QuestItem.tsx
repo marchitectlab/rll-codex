@@ -49,8 +49,9 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
   const [isProcessing, setIsProcessing] = useState(false);
 
   const hasFailureCondition = !!quest.failurePenalty;
-  const isDistanceQuest = quest.questMode === 'distance';
-  const isTimedQuest = quest.questMode === 'countdown' || quest.questMode === 'rounds' || quest.questMode === 'stopwatch';
+  const questMode = quest.questMode || 'standard';
+  const isDistanceQuest = questMode === 'distance';
+  const isTimedQuest = questMode === 'countdown' || questMode === 'rounds' || questMode === 'stopwatch';
 
   const handleAction = () => {
     if (isProcessing) return;
@@ -58,8 +59,8 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
       onStartDistance?.(quest);
       return;
     }
-    if (isTimedQuest || quest.questMode === 'standard') {
-      onStartQuest?.(quest);
+    if (isTimedQuest || questMode === 'standard' || quest.isSystemQuest) {
+      onStartQuest?.({ ...quest, questMode });
       return;
     }
     setIsProcessing(true);
@@ -109,9 +110,9 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
                              </p>
                         ) : isTimedQuest ? (
                              <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-normal text-cyan-300">
-                                {quest.questMode === 'countdown'
+                                {questMode === 'countdown'
                                     ? 'Timer auto-clear protocol'
-                                    : quest.questMode === 'stopwatch'
+                                    : questMode === 'stopwatch'
                                         ? 'Stopwatch grading protocol'
                                         : `${quest.timerConfig?.roundCount || 1} rounds protocol`}
                              </p>
@@ -131,7 +132,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
             
             <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 md:gap-3 flex-shrink-0 w-full sm:w-auto ${quest.attributes.length > 0 ? 'sm:mt-4' : ''}`}>
                 <span className="text-[7px] md:text-[8px] font-semibold inline-block py-0.5 md:py-1 px-2 md:px-3 rounded-sm uppercase tracking-normal border border-white/10 bg-black/60 text-gray-500">
-                    {isDistanceQuest ? 'distance' : isTimedQuest ? quest.questMode : quest.type.replace('-', ' ')}
+                    {isDistanceQuest ? 'distance' : isTimedQuest ? questMode : quest.type.replace('-', ' ')}
                 </span>
                 {hasFailureCondition ? (
                      <button
@@ -145,7 +146,7 @@ export const QuestItem: React.FC<QuestItemProps> = ({ quest, onComplete, onStart
                         onClick={handleAction}
                         className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-3 md:px-5 py-1.5 md:py-2 rounded-sm uppercase text-[9px] md:text-[10px] font-bold tracking-normal transition-all shadow-lg hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] w-24 md:w-[112px] border border-blue-400/40"
                     >
-                        {isDistanceQuest ? 'Start Run' : (isTimedQuest || quest.questMode === 'standard') ? 'Enter' : 'Complete'}
+                        {isDistanceQuest ? 'Start Run' : (isTimedQuest || questMode === 'standard' || quest.isSystemQuest) ? 'Enter' : 'Complete'}
                     </button>
                 )}
             </div>
