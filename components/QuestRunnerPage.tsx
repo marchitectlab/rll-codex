@@ -32,6 +32,25 @@ const StatPanel: React.FC<{ label: string; value: string; tone?: string }> = ({ 
   </div>
 );
 
+const QuestSymbol = () => (
+  <svg viewBox="0 0 48 48" className="h-7 w-7 text-cyan-300" fill="none" aria-hidden="true">
+    <path d="M24 5l14 8v14c0 9-6 13-14 17-8-4-14-8-14-17V13l14-8z" stroke="currentColor" strokeWidth="2" />
+    <path d="M16 25h16M24 17v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path d="M18 13l6-3 6 3" stroke="currentColor" strokeWidth="1.5" opacity=".55" />
+  </svg>
+);
+
+const formatObjectiveText = (text: string): string => {
+  const lower = text.replace(/\.$/, '').toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+};
+
+const getObjectiveTarget = (quest: Quest): number | null => {
+  const source = `${quest.name} ${quest.description || ''}`;
+  const match = source.match(/\b(\d+)\b/);
+  return match ? Number(match[1]) : null;
+};
+
 export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCancel, onComplete }) => {
   const questMode = quest.questMode || 'standard';
   const [status, setStatus] = useState<RunnerStatus>('details');
@@ -52,6 +71,9 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
   const currentStopwatchGrade = stopwatchGrades.reduce((grade, threshold) => (
     elapsedSeconds >= threshold.minSeconds ? threshold.grade : grade
   ), quest.difficulty);
+  const objectiveText = formatObjectiveText(quest.description || quest.name);
+  const objectiveTarget = getObjectiveTarget(quest);
+  const objectiveProgress = status === 'complete' && objectiveTarget ? objectiveTarget : 0;
 
   const primaryLabel = useMemo(() => {
     if (questMode === 'rounds') return phase === 'work' ? `Round ${roundIndex}` : 'Interval';
@@ -143,7 +165,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
         </div>
       )}
       <div className="min-h-full px-4 pb-5 md:p-8 flex flex-col" style={{ paddingTop: 'calc(1.25rem + env(safe-area-inset-top, 0px))' }}>
-        <header className="flex items-center justify-between gap-3 mb-6">
+        <header className="flex items-center justify-between gap-3 mb-4">
           <button onClick={onCancel} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-gray-400 border border-white/10 px-3 py-2 rounded hover:text-white hover:border-blue-400/50">
             Back
           </button>
@@ -153,7 +175,43 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           </div>
         </header>
 
-        <section className="border border-blue-500/20 bg-blue-950/20 backdrop-blur-sm rounded p-4 md:p-5 mb-4 shadow-[0_0_26px_rgba(37,99,235,0.12)]">
+        {status === 'complete' ? (
+          <section className="flex-1 border border-blue-500/20 bg-black/50 rounded overflow-hidden mb-5 shadow-[0_0_34px_rgba(14,165,233,0.12)]">
+            <div className="h-full flex flex-col justify-center text-center py-8 px-4 md:px-6">
+              <p className="font-orbitron text-[10px] text-blue-400 uppercase tracking-[0.3em] mb-3">Quest Complete</p>
+              <h2 className="font-orbitron text-3xl md:text-5xl font-black text-white uppercase mb-2">Mission Accomplished</h2>
+              <p className="font-orbitron text-6xl font-black text-blue-300 mb-6">+{rewardXp}</p>
+              <button onClick={onCancel} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-5 py-3 rounded uppercase text-[10px] font-black tracking-widest border border-blue-400/50">
+                Return to Quest Log
+              </button>
+            </div>
+          </section>
+        ) : (
+          <>
+            <section className="relative overflow-hidden border border-blue-500/20 bg-[#030817] rounded p-5 md:p-7 mb-4 text-center shadow-[0_0_34px_rgba(37,99,235,0.14)]">
+              <div className="absolute inset-0 opacity-35 bg-[linear-gradient(rgba(59,130,246,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.09)_1px,transparent_1px)] bg-[length:28px_28px]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.30),transparent_48%)]" />
+              <div className="absolute left-4 right-4 top-4 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
+              <div className="absolute left-4 right-4 bottom-4 h-px bg-gradient-to-r from-transparent via-blue-400/30 to-transparent" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded border border-blue-400/30 bg-blue-500/10 shadow-[0_0_28px_rgba(59,130,246,0.18)]">
+                  <QuestSymbol />
+                </div>
+                <p className="font-orbitron text-[8px] md:text-[9px] text-blue-400 uppercase tracking-[0.34em] mb-2">{getModeLabel(quest)}</p>
+                <h2 className="font-orbitron text-xl md:text-3xl font-black text-white uppercase tracking-normal leading-tight">{quest.name}</h2>
+                <div className="mt-4 inline-flex items-center justify-center border border-cyan-400/35 bg-cyan-500/10 px-4 py-1.5 rounded">
+                  <span className="font-orbitron text-[9px] md:text-[10px] font-black text-cyan-200 uppercase tracking-[0.24em]">{primaryLabel}</span>
+                </div>
+                <p className="font-orbitron text-5xl md:text-7xl font-black text-white mt-4 drop-shadow-[0_0_22px_rgba(59,130,246,0.38)]">
+                  {questMode === 'standard' ? 'READY' : questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
+                </p>
+                <p className="mt-4 max-w-xl text-xs md:text-sm text-gray-400 uppercase tracking-widest leading-relaxed">
+                  {objectiveText}
+                </p>
+              </div>
+            </section>
+
+            <section className="border border-blue-500/20 bg-blue-950/20 backdrop-blur-sm rounded p-4 md:p-5 mb-4 shadow-[0_0_26px_rgba(37,99,235,0.12)]">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-normal">Quest Grade</p>
@@ -177,55 +235,38 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
               Below {formatDuration(minimumStopwatchSeconds)} is discarded. {stopwatchGrades.map(rule => `${formatDuration(rule.minSeconds)}+ = ${rule.grade}`).join(' | ')}
             </p>
           )}
-        </section>
+            </section>
 
-        <div className="flex-1 border border-blue-500/20 bg-black/50 backdrop-blur-[2px] rounded overflow-hidden mb-5 shadow-[0_0_34px_rgba(14,165,233,0.12)]">
-          {status === 'complete' ? (
-            <div className="h-full flex flex-col justify-center text-center py-8 px-4 md:px-6">
-              <p className="font-orbitron text-[10px] text-blue-400 uppercase tracking-[0.3em] mb-3">Quest Complete</p>
-              <h2 className="font-orbitron text-3xl md:text-5xl font-black text-white uppercase mb-2">Mission Accomplished</h2>
-              <p className="font-orbitron text-6xl font-black text-blue-300 mb-6">+{rewardXp}</p>
-              <button onClick={onCancel} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-5 py-3 rounded uppercase text-[10px] font-black tracking-widest border border-blue-400/50">
-                Return to Quest Log
-              </button>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col text-center">
-              <div className="relative min-h-[220px] overflow-hidden rounded-t bg-[#020617]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(37,99,235,0.36),transparent_40%),linear-gradient(180deg,rgba(2,6,23,0.1),rgba(2,6,23,0.94))]" />
-                <div className="absolute left-1/2 top-8 h-32 w-32 -translate-x-1/2 rounded-full border border-blue-400/25 bg-blue-500/10 shadow-[0_0_70px_rgba(59,130,246,0.28)]" />
-                <div className="absolute left-1/2 top-11 h-28 w-20 -translate-x-1/2 rounded-t-full bg-gradient-to-b from-blue-200/20 via-blue-500/15 to-transparent blur-sm" />
-                <div className="absolute left-1/2 top-16 h-16 w-16 -translate-x-1/2 rounded-full border border-blue-300/30 bg-slate-950/70 shadow-[0_0_32px_rgba(96,165,250,0.25)]" />
-                <div className="absolute left-1/2 top-32 h-28 w-44 -translate-x-1/2 rounded-t-[70px] border-t border-blue-300/30 bg-gradient-to-b from-blue-500/20 to-transparent" />
-                <div className="absolute inset-x-8 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 px-4 pb-5 md:px-6 md:pb-6">
-                  <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal drop-shadow-[0_0_12px_rgba(0,0,0,0.9)]">{quest.name}</p>
-                  <p className="font-orbitron text-3xl md:text-5xl font-black text-white mt-1 drop-shadow-[0_0_18px_rgba(59,130,246,0.35)]">
-                    {questMode === 'standard' ? 'READY' : questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
-                  </p>
+            <section className="border border-blue-500/20 bg-black/45 rounded p-4 md:p-5 mb-4 shadow-[0_0_24px_rgba(14,165,233,0.10)]">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded border border-cyan-400/30 bg-cyan-500/10">
+                    <QuestSymbol />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="font-orbitron text-[8px] text-blue-400 uppercase tracking-[0.3em] mb-1">Objective</p>
+                    <p className="text-xs md:text-sm text-gray-300 uppercase tracking-widest leading-relaxed">{objectiveText}</p>
+                  </div>
                 </div>
+                <p className="font-orbitron text-sm md:text-base font-black text-cyan-200 whitespace-nowrap">
+                  {objectiveTarget ? `${objectiveProgress}/${objectiveTarget}` : status === 'running' && questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : '--'}
+                </p>
               </div>
-              <div className="px-4 pb-5 pt-4 md:px-6 md:pb-6 md:pt-5 bg-gradient-to-b from-black/80 via-slate-950/80 to-slate-950">
-                <p className="font-orbitron text-[9px] md:text-[10px] text-blue-300 uppercase tracking-[0.24em] mb-3">{primaryLabel}</p>
-                {questMode === 'rounds' && (
-                  <p className="font-orbitron text-xs text-gray-400 uppercase tracking-[0.25em] mb-3">
-                    {phase === 'work' ? 'Work phase' : 'Interval'} | {roundIndex}/{totalRounds}
-                  </p>
-                )}
-                {quest.description && (
-                  <p className="text-xs md:text-sm text-gray-400 uppercase tracking-widest leading-relaxed max-w-xl mx-auto">
-                    {quest.description}
-                  </p>
-                )}
-                {quest.backgroundImage && (
-                  <button onClick={() => setGuideOpen(true)} className="mt-5 font-orbitron text-[10px] font-black uppercase tracking-widest text-cyan-200 border border-cyan-400/40 px-5 py-3 rounded bg-cyan-500/10 hover:bg-cyan-500/20">
-                    View Exercise Guide
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+            </section>
+
+            {questMode === 'rounds' && (
+              <p className="font-orbitron text-xs text-gray-400 uppercase tracking-[0.25em] mb-4 text-center">
+                {phase === 'work' ? 'Work phase' : 'Interval'} | {roundIndex}/{totalRounds}
+              </p>
+            )}
+
+            {quest.backgroundImage && (
+              <button onClick={() => setGuideOpen(true)} className="mb-5 w-full font-orbitron text-[10px] font-black uppercase tracking-widest text-cyan-200 border border-cyan-400/40 px-5 py-4 rounded bg-cyan-500/10 hover:bg-cyan-500/20 shadow-[0_0_20px_rgba(14,165,233,0.12)]">
+                View Exercise Guide
+              </button>
+            )}
+          </>
+        )}
 
         {status === 'details' && (
           <button onClick={startQuest} className="sticky bottom-4 font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50 shadow-[0_0_24px_rgba(37,99,235,0.38)]">
