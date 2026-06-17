@@ -26,7 +26,7 @@ const getInitialTime = (quest: Quest): number => {
 };
 
 const StatPanel: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-white' }) => (
-  <div className="border border-blue-500/20 bg-black/40 rounded p-3">
+  <div className="border border-blue-500/15 bg-black/35 rounded p-3">
     <p className="font-orbitron text-[8px] text-blue-300/60 uppercase tracking-normal mb-1">{label}</p>
     <p className={`font-orbitron text-base md:text-xl font-bold ${tone}`}>{value}</p>
   </div>
@@ -133,7 +133,7 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           </div>
         </header>
 
-        <section className="border border-blue-500/20 bg-blue-950/25 backdrop-blur-sm rounded p-4 md:p-6 mb-5">
+        <section className="border border-blue-500/20 bg-blue-950/20 backdrop-blur-sm rounded p-4 md:p-5 mb-4 shadow-[0_0_26px_rgba(37,99,235,0.12)]">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
               <p className="font-orbitron text-[9px] text-gray-500 uppercase tracking-normal">Quest Grade</p>
@@ -159,9 +159,9 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
           )}
         </section>
 
-        <div className="flex-1 border border-white/10 bg-black/45 backdrop-blur-[2px] rounded p-4 md:p-6 mb-5">
+        <div className="flex-1 border border-blue-500/20 bg-black/50 backdrop-blur-[2px] rounded overflow-hidden mb-5 shadow-[0_0_34px_rgba(14,165,233,0.12)]">
           {status === 'complete' ? (
-            <div className="h-full flex flex-col justify-center text-center py-8">
+            <div className="h-full flex flex-col justify-center text-center py-8 px-4 md:px-6">
               <p className="font-orbitron text-[10px] text-blue-400 uppercase tracking-[0.3em] mb-3">Quest Complete</p>
               <h2 className="font-orbitron text-3xl md:text-5xl font-black text-white uppercase mb-2">Mission Accomplished</h2>
               <p className="font-orbitron text-6xl font-black text-blue-300 mb-6">+{rewardXp}</p>
@@ -170,45 +170,58 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
               </button>
             </div>
           ) : (
-            <div className="h-full flex flex-col justify-center text-center py-8">
+            <div className="h-full flex flex-col text-center">
               {quest.backgroundImage && (
-                <div className="mx-auto mb-5 w-full max-w-[320px] sm:max-w-sm">
-                  <div className="aspect-[9/16] max-h-[55vh] overflow-hidden rounded border border-blue-500/30 bg-black/70 shadow-[0_0_28px_rgba(37,99,235,0.22)]">
-                    <img src={quest.backgroundImage} alt="" className="h-full w-full object-contain" />
+                <div className="relative overflow-hidden rounded-t bg-[#020617]">
+                  <div className="absolute inset-0 bg-blue-500/5" />
+                  <img src={quest.backgroundImage} alt="" className="h-[54vw] min-h-[215px] max-h-[430px] w-full object-contain object-center" />
+                  <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/72 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 px-4 pb-4 md:px-6 md:pb-5">
+                    <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal drop-shadow-[0_0_12px_rgba(0,0,0,0.9)]">{quest.name}</p>
+                    <p className="font-orbitron text-[9px] md:text-[10px] text-blue-300 uppercase tracking-[0.24em] mt-1">{primaryLabel}</p>
+                    <p className="font-orbitron text-3xl md:text-5xl font-black text-white mt-1 drop-shadow-[0_0_18px_rgba(59,130,246,0.35)]">
+                      {questMode === 'standard' ? 'READY' : questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
+                    </p>
                   </div>
                 </div>
               )}
-              <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal mb-2">{quest.name}</p>
-              <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{primaryLabel}</p>
-              <p className="font-orbitron text-4xl md:text-6xl font-bold text-white mb-4">
-                {questMode === 'standard' ? 'READY' : questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
-              </p>
-              {questMode === 'rounds' && (
-                <p className="font-orbitron text-xs text-gray-400 uppercase tracking-[0.25em]">
-                  {phase === 'work' ? 'Work phase' : 'Interval'} | {roundIndex}/{totalRounds}
-                </p>
+              {!quest.backgroundImage && (
+                <div className="px-4 pt-8 md:px-6 md:pt-10">
+                  <p className="font-orbitron text-lg md:text-2xl font-bold text-white uppercase tracking-normal mb-2">{quest.name}</p>
+                  <p className="font-orbitron text-[10px] text-blue-300 uppercase tracking-[0.3em] mb-3">{primaryLabel}</p>
+                  <p className="font-orbitron text-4xl md:text-6xl font-bold text-white">
+                    {questMode === 'standard' ? 'READY' : questMode === 'stopwatch' ? formatDuration(elapsedSeconds) : formatDuration(timeLeft)}
+                  </p>
+                </div>
               )}
-              {quest.description && (
-                <p className="text-xs md:text-sm text-gray-400 uppercase tracking-widest leading-relaxed max-w-xl mx-auto mt-5">
-                  {quest.description}
-                </p>
-              )}
+              <div className="px-4 pb-5 pt-4 md:px-6 md:pb-6 md:pt-5 bg-gradient-to-b from-black/80 via-slate-950/80 to-slate-950">
+                {questMode === 'rounds' && (
+                  <p className="font-orbitron text-xs text-gray-400 uppercase tracking-[0.25em] mb-3">
+                    {phase === 'work' ? 'Work phase' : 'Interval'} | {roundIndex}/{totalRounds}
+                  </p>
+                )}
+                {quest.description && (
+                  <p className="text-xs md:text-sm text-gray-400 uppercase tracking-widest leading-relaxed max-w-xl mx-auto">
+                    {quest.description}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {status === 'details' && (
-          <button onClick={startQuest} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50">
+          <button onClick={startQuest} className="sticky bottom-4 font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50 shadow-[0_0_24px_rgba(37,99,235,0.38)]">
             Start Quest
           </button>
         )}
         {status === 'running' && questMode === 'standard' && (
-          <button onClick={finishQuest} className="font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50">
+          <button onClick={finishQuest} className="sticky bottom-4 font-orbitron bg-blue-700 hover:bg-blue-600 text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border border-blue-400/50 shadow-[0_0_24px_rgba(37,99,235,0.38)]">
             Complete Quest
           </button>
         )}
         {status === 'running' && questMode === 'stopwatch' && (
-          <button onClick={finishQuest} className={`font-orbitron text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border ${elapsedSeconds < minimumStopwatchSeconds ? 'bg-red-800 hover:bg-red-700 border-red-400/50' : 'bg-blue-700 hover:bg-blue-600 border-blue-400/50'}`}>
+          <button onClick={finishQuest} className={`sticky bottom-4 font-orbitron text-white px-6 py-4 rounded uppercase text-xs font-black tracking-widest border shadow-[0_0_24px_rgba(37,99,235,0.38)] ${elapsedSeconds < minimumStopwatchSeconds ? 'bg-red-800 hover:bg-red-700 border-red-400/50' : 'bg-blue-700 hover:bg-blue-600 border-blue-400/50'}`}>
             {elapsedSeconds < minimumStopwatchSeconds ? 'Finish and Discard' : `Finish [${currentStopwatchGrade}]`}
           </button>
         )}
