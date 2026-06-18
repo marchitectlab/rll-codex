@@ -134,6 +134,18 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
     return () => window.clearInterval(timer);
   }, [status, questMode]);
 
+  useEffect(() => {
+    if (!guideOpen) return;
+
+    window.history.pushState({ questGuideOpen: true }, '');
+    const handlePopState = () => setGuideOpen(false);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [guideOpen]);
+
   const startQuest = () => {
     setStatus('running');
     setTimeLeft(getInitialTime(quest));
@@ -143,20 +155,33 @@ export const QuestRunnerPage: React.FC<QuestRunnerPageProps> = ({ quest, onCance
     setElapsedSeconds(0);
   };
 
+  const closeGuide = () => {
+    if (window.history.state?.questGuideOpen) {
+      window.history.back();
+      return;
+    }
+    setGuideOpen(false);
+  };
+
   return (
     <div className="min-h-full bg-[#020617] text-white overflow-y-auto">
       {guideOpen && quest.backgroundImage && (
         <div className="fixed inset-0 z-[700] bg-[#020617] text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.2),transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">
-            <header className="flex items-center justify-between gap-3 px-4 py-4 border-b border-blue-500/20 bg-black/60">
-              <div className="min-w-0">
-                <p className="font-orbitron text-[8px] text-blue-400 uppercase tracking-[0.3em]">Exercise Guide</p>
-                <h2 className="font-orbitron text-sm font-black uppercase tracking-widest truncate">{quest.name}</h2>
+            <header
+              className="border-b border-blue-500/20 bg-black/70 px-4 pb-4"
+              style={{ paddingTop: 'calc(0.9rem + env(safe-area-inset-top, 0px))' }}
+            >
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-orbitron text-[9px] text-blue-400 uppercase tracking-[0.3em]">Exercise Guide</p>
+                  <h2 className="font-orbitron text-sm font-black uppercase tracking-widest truncate mt-1">{quest.name}</h2>
+                </div>
+                <button onClick={closeGuide} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-blue-200 border border-blue-500/40 px-4 py-2 rounded hover:bg-blue-500/10">
+                  Back to Quest
+                </button>
               </div>
-              <button onClick={() => setGuideOpen(false)} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-blue-200 border border-blue-500/40 px-4 py-2 rounded hover:bg-blue-500/10">
-                Close
-              </button>
             </header>
             <div className="flex-1 overflow-auto p-3 md:p-6">
               <img src={quest.backgroundImage} alt="" className="mx-auto h-auto max-h-none w-full max-w-3xl rounded border border-blue-500/20 bg-black" />
