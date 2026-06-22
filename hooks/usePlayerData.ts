@@ -7,8 +7,9 @@ import { calculateDistanceQuestResult, formatDistance, formatPace } from '../lib
 import { playNotificationSound } from '../lib/notificationSound';
 import { formatDungeonRewardSummary, rollDungeonRewards, type DungeonRewardRoll } from '../lib/dungeonRewards';
 import { supabase } from '../lib/supabase';
+import { getDailyProgressXp, getLocalDateKey, getLocalEndOfDayIso } from '../lib/dailyProgress';
 
-const DATA_VERSION = 11;
+const DATA_VERSION = 12;
 const Berserker_GEAR_IDS = ['armor_berserker'];
 
 const getScalingXpBonus = (itemId: string, sourceRank: Difficulty): number => {
@@ -74,6 +75,7 @@ const getNextMidnight = (): number => {
 
 const DEFAULT_STATE: PlayerDataState = {
     dataVersion: DATA_VERSION,
+    penaltyTrackingStartedAt: getLocalDateKey(new Date()),
     player: { name: 'Hunter', level: 1, xp: 0, rank: Rank.E, attributes: { [Attribute.Intellect]: 1, [Attribute.Strength]: 1, [Attribute.Agility]: 1, [Attribute.Endurance]: 1, [Attribute.Perception]: 1 }, shopCoins: 0, unlockedTitles: [], equippedTitle: null },
     quests: [...SYSTEM_QUESTS], completedQuests: [], skills: [], skillFolders: [], categories: [], activeDungeon: null, dungeonCooldowns: {}, dungeonHistory: [], achievements: { ...ACHIEVEMENTS_DATA },
     inventory: { equipment: { helmet: null, armor: null, gloves: null, boots: null, gear: null }, storage: [], materials: [] },
@@ -155,6 +157,9 @@ const getInitialState = (): PlayerDataState => {
                 dungeonKeys,
                 achievements: { ...ACHIEVEMENTS_DATA, ...(parsed.achievements || {}) }, 
                 dataVersion: DATA_VERSION, 
+                penaltyTrackingStartedAt: typeof parsed.penaltyTrackingStartedAt === 'string' && parsed.penaltyTrackingStartedAt
+                    ? parsed.penaltyTrackingStartedAt
+                    : getLocalDateKey(new Date()),
                 notifications: [] 
             };
         }
@@ -316,11 +321,11 @@ export const usePlayerData = () => {
 
     useEffect(() => {
         const checkDailyPenalties = () => {
-            const todayStr = new Date().toISOString().split('T')[0];
             const lookbackDays = 14;
             const penaltyAmountBase = 250;
 
             setState(currentState => {
+                const trackingStartedAt = currentState.penaltyTrackingStartedAt || getLocalDateKey(new Date());
                 let currentXp = currentState.player.xp;
                 let currentLevel = currentState.player.level;
                 let newCompletedQuests = [...currentState.completedQuests];
@@ -330,23 +335,25 @@ export const usePlayerData = () => {
                 for (let i = 1; i <= lookbackDays; i++) {
                     const checkDate = new Date();
                     checkDate.setDate(checkDate.getDate() - i);
-                    const checkDateStr = checkDate.toISOString().split('T')[0];
-                    
-                    const dailyXp = currentState.completedQuests
-                        .filter(q => q.completedAt.startsWith(checkDateStr) && !q.isSystemQuest)
-                        .reduce((sum, q) => sum + (XP_PER_DIFFICULTY[q.difficulty] || 0), 0) +
-                        currentState.dungeonHistory
-                        .filter(d => new Date(d.completedAt).toISOString().split('T')[0] === checkDateStr && d.status === 'cleared')
-                        .reduce((sum, d) => sum + (DUNGEONS.find(dd => dd.id === d.id)?.rewards?.xp || 0), 0);
+                    const checkDateStr = getLocalDateKey(checkDate);
+                    if (!checkDateStr || checkDateStr < trackingStartedAt) continue;
 
-                    const alreadyPenalized = currentState.completedQuests.some(q => q.id === 'sys_x_01' && q.completedAt.startsWith(checkDateStr));
+                    const dailyXp = getDailyProgressXp(
+                        currentState.completedQuests,
+                        currentState.dungeonHistory,
+                        checkDateStr,
+                    );
+
+                    const alreadyPenalized = currentState.completedQuests.some(q =>
+                        q.id === 'sys_x_01' && getLocalDateKey(q.completedAt) === checkDateStr
+                    );
                     
                     if (dailyXp < DAILY_XP_GOAL && !alreadyPenalized) {
                         const slothQuest = SYSTEM_QUESTS.find(q => q.id === 'sys_x_01') || currentState.quests.find(q => q.id === 'sys_x_01');
                         if (slothQuest) {
                             changesMade = true;
                             penaltyDates.push(checkDateStr);
-                            const penaltyRecord: CompletedQuest = { ...slothQuest, completedAt: `${checkDateStr}T23:59:59Z`, completionId: `penalty-${checkDateStr}-${Date.now()}` };
+                            const penaltyRecord: CompletedQuest = { ...slothQuest, completedAt: getLocalEndOfDayIso(checkDateStr), completionId: `penalty-${checkDateStr}-${Date.now()}` };
                             newCompletedQuests.push(penaltyRecord);
                             
                             let amount = - (slothQuest.failurePenalty?.xp || penaltyAmountBase);
@@ -375,9 +382,10 @@ export const usePlayerData = () => {
                     penaltyDates.forEach(d => addNotification('SLOTH PENALTY', `Discipline failure detected on ${d}.`, 'danger'));
                 }, 100);
 
-                return { 
+                return {
                     ...currentState, 
                     completedQuests: newCompletedQuests, 
+                    penaltyTrackingStartedAt: trackingStartedAt,
                     player: { ...currentState.player, xp: currentXp, level: currentLevel, rank: getRankForLevel(currentLevel) } 
                 };
             });
@@ -1218,7 +1226,17 @@ export const usePlayerData = () => {
             const parsed = JSON.parse(json);
             if (parsed.player) {
                 const questsWithSystem = mergeSystemQuests(parsed.quests);
-                setState({ ...parsed, quests: questsWithSystem, notifications: [], events: [] });
+                setState({
+                    ...DEFAULT_STATE,
+                    ...parsed,
+                    quests: questsWithSystem,
+                    completedQuests: Array.isArray(parsed.completedQuests) ? parsed.completedQuests : [],
+                    dungeonHistory: Array.isArray(parsed.dungeonHistory) ? parsed.dungeonHistory : [],
+                    notifications: [],
+                    events: [],
+                    dataVersion: DATA_VERSION,
+                    penaltyTrackingStartedAt: getLocalDateKey(new Date()),
+                });
                 addNotification('RESTORE SUCCESS', 'System state synchronized.', 'success');
             }
         } catch (e) {
@@ -1269,6 +1287,7 @@ export const usePlayerData = () => {
                 notifications: [],
                 events: [],
                 dataVersion: DATA_VERSION,
+                penaltyTrackingStartedAt: getLocalDateKey(new Date()),
             });
             addNotification('CLOUD RESTORE COMPLETE', 'Progress restored from your account.', 'success');
             return true;

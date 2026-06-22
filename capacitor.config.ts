@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.rll.mobile',
-  appName: 'R.L.L Lite',
+  appName: 'R.L.L',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

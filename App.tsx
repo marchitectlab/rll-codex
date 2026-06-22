@@ -28,6 +28,7 @@ import { getGearFullImage, getGearIcon } from './lib/gearIcons';
 import { getMaterialIcon, getMaterialName } from './lib/materialIcons';
 import { primeNotificationSound } from './lib/notificationSound';
 import { rollDungeonRewards, type DungeonRewardRoll } from './lib/dungeonRewards';
+import { getDailyProgressXp, getLocalDateKey } from './lib/dailyProgress';
 
 // ---- AdMob IDs ----
 const BANNER_AD_ID = 'ca-app-pub-2481483129842770/1727552190';
@@ -219,7 +220,7 @@ const PromoModal: React.FC<{ onClose: () => void; onPurchase: () => void }> = ({
         </div>
         <h3 className="font-orbitron text-lg font-black text-yellow-400 uppercase mb-1">Upgrade to Pro</h3>
         <p className="text-gray-300 text-xs mb-4 leading-relaxed">
-          You are currently playing <span className="text-yellow-400 font-bold">R.L.L Lite</span>. Upgrade to <span className="text-white font-bold">Pro</span> for:
+          Upgrade <span className="text-yellow-400 font-bold">R.L.L</span> to <span className="text-white font-bold">Pro</span> for:
         </p>
         <ul className="text-[10px] text-gray-400 space-y-1 mb-4 font-bold uppercase tracking-wide">
           <li className="flex items-center gap-2"><span className="text-green-400">✓</span> 100% Ad-Free Experience</li>
@@ -462,30 +463,13 @@ const AchievementsPage: React.FC<{ achievements: Record<string, Achievement> }> 
     );
 };
 
-const getLocalDateKey = (value: Date | number | string): string => {
-    const date = new Date(value);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
-
 const DailyXpRequirementBar: React.FC<{
     completedQuests: CompletedQuest[];
     dungeonHistory: DungeonHistoryEntry[];
 }> = ({ completedQuests, dungeonHistory }) => {
     const [showWarning, setShowWarning] = useState(false);
     const todayKey = getLocalDateKey(new Date());
-    const questXp = completedQuests
-        .filter(q => getLocalDateKey(q.completedAt) === todayKey && q.difficulty !== DifficultyEnum.X)
-        .reduce((sum, q) => sum + (q.earnedXp ?? XP_PER_DIFFICULTY[q.difficulty] ?? 0), 0);
-    const dungeonXp = dungeonHistory
-        .filter(d => d.status === 'cleared' && getLocalDateKey(d.completedAt) === todayKey)
-        .reduce((sum, d) => {
-            const dungeon = DUNGEONS.find(item => item.id === d.id);
-            return sum + (dungeon?.rewards?.xp || 0);
-        }, 0);
-    const totalXp = Math.max(0, questXp + dungeonXp);
+    const totalXp = getDailyProgressXp(completedQuests, dungeonHistory, todayKey);
     const progress = Math.min(100, (totalXp / DAILY_XP_GOAL) * 100);
     const remaining = Math.max(0, DAILY_XP_GOAL - totalXp);
 
@@ -1689,9 +1673,8 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
                 <header className="mb-8">
                     <div className="flex items-baseline gap-2">
                         <h1 className="font-orbitron font-black text-3xl tracking-tighter text-blue-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">R.L.L</h1>
-                        <span className="font-orbitron text-[8px] font-black text-blue-300/60 uppercase tracking-[0.2em] border border-blue-500/30 px-1 py-0.5 rounded-sm">LITE</span>
                     </div>
-                    <p className="font-orbitron text-[8px] text-blue-500/40 uppercase tracking-widest mt-0.5">REAL LIFE LEVELLING LITE</p>
+                    <p className="font-orbitron text-[8px] text-blue-500/40 uppercase tracking-widest mt-0.5">REAL LIFE LEVELLING</p>
                     <div className="h-1 w-16 bg-blue-500 mt-2 rounded-full"></div>
                 </header>
                 <nav className="flex flex-col gap-3 flex-grow">
@@ -1717,7 +1700,7 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
                     </div>
                 )}
                 <footer className="mt-4 text-[8px] font-orbitron text-blue-500/40 tracking-widest uppercase">
-                    &copy; 2025 R.L.L OS // LITE EDITION
+                    &copy; 2025 R.L.L OS
                 </footer>
             </aside>}
 
@@ -1738,7 +1721,6 @@ const App: React.FC<AppProps> = ({ userEmail, userId, onSignIn, onSignUp, onSign
                     )}
                     <div className="flex items-baseline gap-1.5">
                         <h1 className="font-orbitron font-black text-xl text-blue-400 tracking-tighter uppercase leading-none">R.L.L</h1>
-                        <span className="font-orbitron text-[7px] font-black text-blue-300/50 uppercase tracking-[0.15em] border border-blue-500/20 px-1 rounded-sm">LITE</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">

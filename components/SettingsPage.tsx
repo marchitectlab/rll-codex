@@ -12,8 +12,6 @@ interface SettingsPageProps {
   onSyncFromCloud: () => Promise<boolean>;
 }
 
-const APP_BUILD = 'Lite';
-
 const ImportDataButton: React.FC<{ onImport: (json: string) => void }> = ({ onImport }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,7 +104,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <p className="font-orbitron text-[10px] text-gray-300 uppercase tracking-widest">{linked ? 'Linked' : 'Guest Mode'}</p>
               </div>
               <p className="font-orbitron text-sm text-blue-300 truncate">{userEmail || 'No account linked'}</p>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2">{isPro ? 'Pro entitlement active' : 'Lite entitlement active'}</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2">{isPro ? 'Pro entitlement active' : 'Standard entitlement active'}</p>
             </div>
             {linked ? (
               <button onClick={onSignOut} className="font-orbitron text-[10px] font-black uppercase tracking-widest text-red-300 border border-red-500/30 hover:bg-red-500/10 px-4 py-3 rounded transition-all">
@@ -154,7 +152,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="font-orbitron text-[8px] text-gray-500 uppercase tracking-widest mb-1">App</p>
-              <p className="font-orbitron text-sm text-white font-black">R.L.L {APP_BUILD}</p>
+              <p className="font-orbitron text-sm text-white font-black">R.L.L</p>
             </div>
             <div>
               <p className="font-orbitron text-[8px] text-gray-500 uppercase tracking-widest mb-1">Release</p>

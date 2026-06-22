@@ -38,14 +38,33 @@ const difficultyStyles: Record<Difficulty, { text: string; border: string }> = {
     [Difficulty.X]: { text: 'text-red-400', border: 'border-red-800' },
 };
 
-const getXpGrade = (xp: number): Difficulty => {
-    if (xp > 350) return Difficulty.S_PLUS;
-    if (xp > 200) return Difficulty.S;
-    if (xp > 130) return Difficulty.A;
-    if (xp > 80) return Difficulty.B;
-    if (xp > 50) return Difficulty.C;
-    if (xp > 30) return Difficulty.D;
-    return Difficulty.E;
+const RLL_BLUE = '59, 130, 246';
+
+const getActivityBlueStyle = (xp: number): React.CSSProperties | undefined => {
+    if (xp <= 30) return undefined;
+
+    const intensity = xp <= 50
+        ? { fill: 0.05, border: 0.16, text: 0.36, glow: 0 }
+        : xp <= 80
+            ? { fill: 0.08, border: 0.24, text: 0.48, glow: 0 }
+            : xp <= 100
+                ? { fill: 0.12, border: 0.34, text: 0.62, glow: 0 }
+                : xp <= 150
+                    ? { fill: 0.18, border: 0.52, text: 0.82, glow: 0 }
+                    : xp <= 200
+                        ? { fill: 0.2, border: 0.62, text: 0.9, glow: 8 }
+                        : xp <= 250
+                            ? { fill: 0.24, border: 0.76, text: 1, glow: 14 }
+                            : { fill: 0.3, border: 0.95, text: 1, glow: 22 };
+
+    return {
+        color: `rgba(${RLL_BLUE}, ${intensity.text})`,
+        backgroundColor: `rgba(${RLL_BLUE}, ${intensity.fill})`,
+        borderColor: `rgba(${RLL_BLUE}, ${intensity.border})`,
+        boxShadow: intensity.glow > 0
+            ? `0 0 ${intensity.glow}px rgba(${RLL_BLUE}, ${intensity.border}), inset 0 0 ${Math.max(4, intensity.glow / 2)}px rgba(${RLL_BLUE}, ${intensity.fill})`
+            : 'none',
+    };
 };
 
 const RoutePreview: React.FC<{ points: NonNullable<CompletedQuest['runRoute']> }> = ({ points }) => {
@@ -238,9 +257,10 @@ export const QuestHistory: React.FC<QuestHistoryProps> = ({ completedQuests, dun
             const date = new Date(year, month, day);
             const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             const dayActivity = activitiesByDate.get(dateStr);
-            const xpGrade = getXpGrade(dayActivity?.totalXp || 0);
-            const gradeStyles = difficultyStyles[xpGrade];
             const hasActivity = !!dayActivity;
+            const activityXp = dayActivity?.totalXp || 0;
+            const activityStyle = getActivityBlueStyle(activityXp);
+            const isLowActivity = hasActivity && activityXp <= 30;
             
             const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
 
@@ -248,10 +268,12 @@ export const QuestHistory: React.FC<QuestHistoryProps> = ({ completedQuests, dun
                 <div key={day} className="flex items-center justify-center h-14">
                     <button 
                         onClick={() => { if (hasActivity) handleDayClick(date, dayActivity!); }}
-                        className={`w-12 h-12 flex items-center justify-center text-base font-bold rounded-full transition-all duration-200 border-2 ${gradeStyles.border} ${hasActivity ? 'bg-gray-800/60 hover:bg-gray-700/80 cursor-pointer' : 'bg-transparent text-gray-600 cursor-default'}`}
+                        className={`w-12 h-12 flex items-center justify-center text-base font-bold rounded-full transition-[filter,transform] duration-200 border-2 ${hasActivity ? 'hover:brightness-125 hover:scale-105 cursor-pointer' : 'bg-transparent border-gray-800 text-gray-600 cursor-default'} ${isLowActivity ? 'bg-gray-900/50 border-gray-700 text-gray-400' : ''} ${isToday ? 'ring-1 ring-white/35 ring-offset-2 ring-offset-[#020617]' : ''}`}
+                        style={activityStyle}
+                        aria-label={hasActivity ? `${day}, ${activityXp} XP earned` : `${day}, no activity`}
                         disabled={!hasActivity}
                     >
-                        <span className={isToday ? 'text-sky-300' : gradeStyles.text}>{day}</span>
+                        <span>{day}</span>
                     </button>
                 </div>
             );

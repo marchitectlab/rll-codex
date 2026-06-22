@@ -84,7 +84,7 @@ export const createRouteImage = (points: RunRoutePoint[], result: DistanceRunRes
 
   ctx.fillStyle = '#bfdbfe';
   ctx.font = '900 34px Arial';
-  ctx.fillText('R.L.L LITE DISTANCE QUEST', 70, 100);
+  ctx.fillText('R.L.L DISTANCE QUEST', 70, 100);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 58px Arial';
@@ -133,7 +133,7 @@ export const downloadRouteImage = async (dataUrl: string, fileName: string) => {
     });
     await Share.share({
       title: 'Run Route',
-      text: 'R.L.L Lite distance quest route',
+      text: 'R.L.L distance quest route',
       url: fileUri.uri,
       dialogTitle: 'Save route image',
     });

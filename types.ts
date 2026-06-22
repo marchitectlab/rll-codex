@@ -306,6 +306,7 @@ export interface DungeonKeys {
 
 export interface PlayerDataState {
   dataVersion?: number;
+  penaltyTrackingStartedAt?: string;
   player: Player;
   quests: Quest[];
   completedQuests: CompletedQuest[];

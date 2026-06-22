@@ -79,7 +79,7 @@ export const startRunTracker = async (callback: RunTrackerCallback): Promise<Run
 
   const watcherId = await BackgroundGeolocation.addWatcher(
     {
-      backgroundTitle: 'R.L.L Lite distance quest',
+      backgroundTitle: 'R.L.L distance quest',
       backgroundMessage: 'Tracking your active distance quest.',
       requestPermissions: true,
       stale: false,

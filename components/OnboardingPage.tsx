@@ -63,7 +63,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-orbitron text-[8px] text-blue-400 uppercase tracking-[0.35em]">First Login Sequence</p>
-                <h1 className="font-orbitron text-2xl md:text-4xl font-black text-blue-200 uppercase mt-1">R.L.L Lite</h1>
+                <h1 className="font-orbitron text-2xl md:text-4xl font-black text-blue-200 uppercase mt-1">R.L.L</h1>
               </div>
             </div>
             <div className="h-1 bg-slate-900 border border-blue-500/10 rounded mt-5 overflow-hidden">
